@@ -196,6 +196,11 @@
     display: none;
   }
 
+  /* keep floor chips clear of the floating list/map toggle */
+  .floor-chips {
+    bottom: 84px;
+  }
+
   .mobile-toggle {
     display: block;
     position: fixed;
