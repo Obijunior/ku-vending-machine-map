@@ -175,6 +175,11 @@
   height: 26px;
 }
 
+.map-marker:focus-visible {
+  outline: 3px solid #ffc82d;
+  outline-offset: 2px;
+}
+
 /* --- Mobile --- */
 
 .mobile-toggle {

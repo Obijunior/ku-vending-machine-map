@@ -3,9 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AppLayout } from './App'
+import { buildings } from './data/buildings'
+import { getMachinesForBuilding } from './data/queries'
 
 vi.mock('./components/MapView', () => ({
-  default: () => <div data-testid="map-stub" />,
+  default: ({ buildings }: { buildings: { id: string }[] }) => (
+    <div data-testid="map-stub" data-marker-count={buildings.length} />
+  ),
 }))
 
 function renderAt(path: string) {
@@ -50,5 +54,16 @@ describe('AppLayout', () => {
     const toggle = screen.getByRole('button', { name: /map/i })
     await user.click(toggle)
     expect(screen.getByRole('button', { name: /list/i })).toBeInTheDocument()
+  })
+
+  it('only passes buildings with machines to MapView', () => {
+    renderAt('/')
+    const expected = buildings.filter(
+      (b) => getMachinesForBuilding(b.id).length > 0,
+    ).length
+    expect(screen.getByTestId('map-stub')).toHaveAttribute(
+      'data-marker-count',
+      String(expected),
+    )
   })
 })

@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { BrowserRouter, Route, Routes, matchPath, useLocation } from 'react-router-dom'
 import { buildings } from './data/buildings'
-import { getMachineById } from './data/queries'
+import { getMachineById, getMachinesForBuilding } from './data/queries'
 import BuildingDetail from './components/BuildingDetail'
 import BuildingList from './components/BuildingList'
 import MachineDetail from './components/MachineDetail'
 import MapView from './components/MapView'
 import NotFound from './components/NotFound'
 import './App.css'
+
+const buildingsWithMachines = buildings.filter(
+  (b) => getMachinesForBuilding(b.id).length > 0,
+)
 
 function useSelectedBuildingId(): string | null {
   const { pathname } = useLocation()
@@ -39,7 +43,7 @@ export function AppLayout() {
         </Routes>
       </aside>
       <div className={`map-pane ${mobileView === 'list' ? 'mobile-hidden' : ''}`}>
-        <MapView buildings={buildings} selectedBuildingId={selectedBuildingId} />
+        <MapView buildings={buildingsWithMachines} selectedBuildingId={selectedBuildingId} />
       </div>
       <button
         type="button"
