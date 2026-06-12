@@ -196,11 +196,6 @@
     display: none;
   }
 
-  /* keep floor chips clear of the floating list/map toggle */
-  .floor-chips {
-    bottom: 84px;
-  }
-
   .mobile-toggle {
     display: block;
     position: fixed;
@@ -305,4 +300,12 @@
   color: #aab;
   padding: 24px;
   text-align: center;
+}
+
+/* Mobile: keep floor chips clear of the floating list/map toggle.
+   Must stay after the indoor-view block — same specificity, source order wins. */
+@media (max-width: 768px) {
+  .floor-chips {
+    bottom: 84px;
+  }
 }
