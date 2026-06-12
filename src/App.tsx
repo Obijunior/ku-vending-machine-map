@@ -1,31 +1,31 @@
 import { useState } from 'react'
 import { BrowserRouter, Route, Routes, matchPath, useLocation } from 'react-router-dom'
-import { buildings } from './data/buildings'
-import { getMachineById, getMachinesForBuilding } from './data/queries'
+import { getMachineById } from './data/queries'
 import BuildingDetail from './components/BuildingDetail'
 import BuildingList from './components/BuildingList'
 import MachineDetail from './components/MachineDetail'
-import MapView from './components/MapView'
+import MapPane from './components/MapPane'
 import NotFound from './components/NotFound'
 import './App.css'
 
-const buildingsWithMachines = buildings.filter(
-  (b) => getMachinesForBuilding(b.id).length > 0,
-)
-
-function useSelectedBuildingId(): string | null {
+function useSelection(): { buildingId: string | null; machineId: string | null } {
   const { pathname } = useLocation()
   const buildingMatch = matchPath('/building/:id', pathname)
-  if (buildingMatch?.params.id) return buildingMatch.params.id
+  if (buildingMatch?.params.id) {
+    return { buildingId: buildingMatch.params.id, machineId: null }
+  }
   const machineMatch = matchPath('/machine/:id', pathname)
   if (machineMatch?.params.id) {
-    return getMachineById(machineMatch.params.id)?.buildingId ?? null
+    return {
+      buildingId: getMachineById(machineMatch.params.id)?.buildingId ?? null,
+      machineId: machineMatch.params.id,
+    }
   }
-  return null
+  return { buildingId: null, machineId: null }
 }
 
 export function AppLayout() {
-  const selectedBuildingId = useSelectedBuildingId()
+  const { buildingId, machineId } = useSelection()
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
 
   return (
@@ -43,7 +43,7 @@ export function AppLayout() {
         </Routes>
       </aside>
       <div className={`map-pane ${mobileView === 'list' ? 'mobile-hidden' : ''}`}>
-        <MapView buildings={buildingsWithMachines} selectedBuildingId={selectedBuildingId} />
+        <MapPane selectedBuildingId={buildingId} selectedMachineId={machineId} />
       </div>
       <button
         type="button"
