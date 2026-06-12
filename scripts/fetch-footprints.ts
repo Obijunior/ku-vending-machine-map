@@ -51,10 +51,13 @@ function centroidOf(points: LngLat[]): LngLat {
   return [lng / points.length, lat / points.length]
 }
 
-function distanceSq(a: LngLat, b: LngLat): number {
-  const dx = a[0] - b[0]
-  const dy = a[1] - b[1]
-  return dx * dx + dy * dy
+const METERS_PER_DEG_LAT = 111_320
+
+function distanceMeters(a: LngLat, b: LngLat): number {
+  const metersPerDegLng = METERS_PER_DEG_LAT * Math.cos((a[1] * Math.PI) / 180)
+  const dx = (a[0] - b[0]) * metersPerDegLng
+  const dy = (a[1] - b[1]) * METERS_PER_DEG_LAT
+  return Math.hypot(dx, dy)
 }
 
 async function fetchOverpass(query: string): Promise<{ elements: OverpassWay[] }> {
@@ -88,19 +91,29 @@ async function main() {
   const footprints: Record<string, LngLat[]> = {}
   const missing: string[] = []
 
+  const FALLBACK_RADIUS_M = 100
+
   for (const building of buildings) {
     const containing = polygons.filter((p) => pointInPolygon(building.coordinates, p))
-    const candidates = containing.length > 0 ? containing : polygons
+    const candidates =
+      containing.length > 0
+        ? containing
+        : polygons.filter(
+            (p) => distanceMeters(centroidOf(p), building.coordinates) <= FALLBACK_RADIUS_M,
+          )
     if (candidates.length === 0) {
       missing.push(building.id)
       continue
     }
     const best = candidates.reduce((a, b) =>
-      distanceSq(centroidOf(a), building.coordinates) <=
-      distanceSq(centroidOf(b), building.coordinates)
+      distanceMeters(centroidOf(a), building.coordinates) <=
+      distanceMeters(centroidOf(b), building.coordinates)
         ? a
         : b,
     )
+    const bestCentroid = centroidOf(best)
+    const dist = Math.round(distanceMeters(bestCentroid, building.coordinates))
+    console.log(`${building.id}: ${best.length} vertices, centroid ${dist}m from pin`)
     footprints[building.id] = best
   }
 
@@ -117,7 +130,7 @@ async function main() {
   ]
   writeFileSync('src/data/footprints.ts', lines.join('\n'))
 
-  console.log(`Wrote footprints for ${Object.keys(footprints).length}/${buildings.length} buildings.`)
+  console.log(`\nWrote footprints for ${Object.keys(footprints).length}/${buildings.length} buildings.`)
   if (missing.length > 0) {
     console.log(`No footprint found (fallback rectangle will render): ${missing.join(', ')}`)
   }

@@ -156,4 +156,26 @@ describe('footprints', () => {
       }
     }
   })
+
+  it('lie near their building (centroid within 150 m of the pin)', () => {
+    const byId = new Map(buildings.map((b) => [b.id, b]))
+    for (const [id, polygon] of Object.entries(footprints)) {
+      const building = byId.get(id)!
+      let lngSum = 0
+      let latSum = 0
+      for (const [lng, lat] of polygon) {
+        lngSum += lng
+        latSum += lat
+      }
+      const centroid: [number, number] = [lngSum / polygon.length, latSum / polygon.length]
+      const metersPerDegLng = 111_320 * Math.cos((centroid[1] * Math.PI) / 180)
+      const dx = (centroid[0] - building.coordinates[0]) * metersPerDegLng
+      const dy = (centroid[1] - building.coordinates[1]) * 111_320
+      const distance = Math.hypot(dx, dy)
+      expect(
+        distance <= 150,
+        `footprint centroid for ${id} is ${Math.round(distance)}m from its building pin — wrong polygon?`,
+      ).toBe(true)
+    }
+  })
 })
