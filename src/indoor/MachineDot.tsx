@@ -5,8 +5,6 @@ import { lngLatToLocal, type LngLat } from './projection'
 import type { ThreeEvent } from '@react-three/fiber'
 import type { VendingMachine } from '../data/types'
 
-const DOT_RADIUS = 0.9
-
 type Props = {
   machine: VendingMachine
   origin: LngLat
@@ -15,6 +13,7 @@ type Props = {
   dimmed: boolean
   /** Spreads unpositioned machines sharing a floor centroid apart */
   offsetX: number
+  dotRadius: number
   onSelect: (id: string) => void
 }
 
@@ -25,6 +24,7 @@ export default function MachineDot({
   selected,
   dimmed,
   offsetX,
+  dotRadius,
   onSelect,
 }: Props) {
   const [hovered, setHovered] = useState(false)
@@ -43,7 +43,7 @@ export default function MachineDot({
   }
 
   return (
-    <group position={[east + offsetX, elevation + 1.4, -north]}>
+    <group position={[east + offsetX, elevation + dotRadius + 0.5, -north]}>
       <mesh
         rotation={positioned ? [0, 0, 0] : [Math.PI / 2, 0, 0]}
         onClick={handleClick}
@@ -58,9 +58,9 @@ export default function MachineDot({
         }}
       >
         {positioned ? (
-          <sphereGeometry args={[DOT_RADIUS, 24, 24]} />
+          <sphereGeometry args={[dotRadius, 24, 24]} />
         ) : (
-          <torusGeometry args={[DOT_RADIUS, 0.22, 12, 32]} />
+          <torusGeometry args={[dotRadius, dotRadius * 0.24, 12, 32]} />
         )}
         <meshStandardMaterial color={color} transparent opacity={dimmed ? 0.25 : 1} />
       </mesh>

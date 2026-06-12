@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { footprints } from '../data/footprints'
 import FloorPlate from './FloorPlate'
 import MachineDot from './MachineDot'
-import { centroid, fallbackRectangle, floorElevation, lngLatToLocal } from './projection'
+import { floorElevation } from './projection'
+import { buildingFootprint } from './footprint'
 import type { Building, VendingMachine } from '../data/types'
 
 type Props = {
@@ -20,11 +20,8 @@ export default function BuildingScene({
   emphasizedFloor,
   onSelectMachine,
 }: Props) {
-  const { points, origin } = useMemo(() => {
-    const polygon = footprints[building.id] ?? fallbackRectangle(building.coordinates)
-    const origin = centroid(polygon)
-    return { points: polygon.map((p) => lngLatToLocal(p, origin)), origin }
-  }, [building])
+  const { points, origin, radius } = useMemo(() => buildingFootprint(building), [building])
+  const dotRadius = Math.min(Math.max(radius * 0.03, 1.2), 3.5)
 
   // Unpositioned machines on the same floor would stack at the centroid; fan them out.
   const offsets = useMemo(() => {
@@ -32,11 +29,11 @@ export default function BuildingScene({
     for (const floor of building.floors) {
       const unpositioned = machines.filter((m) => m.floor === floor && !m.position)
       unpositioned.forEach((m, i) =>
-        map.set(m.id, (i - (unpositioned.length - 1) / 2) * 2.5),
+        map.set(m.id, (i - (unpositioned.length - 1) / 2) * (dotRadius * 2.6)),
       )
     }
     return map
-  }, [building, machines])
+  }, [building, machines, dotRadius])
 
   return (
     <group>
@@ -57,6 +54,7 @@ export default function BuildingScene({
           selected={machine.id === selectedMachineId}
           dimmed={emphasizedFloor !== null && emphasizedFloor !== machine.floor}
           offsetX={offsets.get(machine.id) ?? 0}
+          dotRadius={dotRadius}
           onSelect={onSelectMachine}
         />
       ))}

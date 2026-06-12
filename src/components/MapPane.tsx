@@ -62,6 +62,7 @@ export default function MapPane({ selectedBuildingId, selectedMachineId }: Props
         <IndoorErrorBoundary>
           <Suspense fallback={<div className="pane-note">Loading 3D view…</div>}>
             <IndoorView
+              key={building.id}
               building={building}
               machines={getMachinesForBuilding(building.id)}
               selectedMachineId={selectedMachineId}
