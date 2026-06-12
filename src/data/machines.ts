@@ -84,4 +84,31 @@ export const machines: VendingMachine[] = [
       { code: '3', item: 'Starbucks Frappuccino', priceCents: 350 },
     ],
   },
+  {
+    id: 'leep2-1-snack',
+    buildingId: 'leep2',
+    type: 'snack',
+    floor: 1,
+    locationNote: 'Area by Burns-Mac lounge',
+    lastUpdated: '2026-06-11',
+    slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
+  },
+  {
+    id: 'leep2-2-drink',
+    buildingId: 'leep2',
+    type: 'drink',
+    floor: 1,
+    locationNote: 'Area by Burns-Mac lounge',
+    lastUpdated: '2026-06-11',
+    slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
+  },
+  {
+    id: 'leep2-3-snack',
+    buildingId: 'leep2',
+    type: 'snack',
+    floor: 1,
+    locationNote: 'Area by Burns-Mac lounge',
+    lastUpdated: '2026-06-11',
+    slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
+  },
 ]
