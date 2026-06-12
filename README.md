@@ -24,8 +24,14 @@ bun run build    # production build in dist/
 
 ## Updating the data
 
-- Buildings: `src/data/buildings.ts` (id, name, [lng, lat])
-- Machines & inventory: `src/data/machines.ts` (slot code, item, price in cents)
+- Buildings: `src/data/buildings.ts` (id, name, `[lng, lat]`, `floors`)
+- Machines & inventory: `src/data/machines.ts` (slot code, item, price in cents;
+  optional `position: [lng, lat]` places the machine in the 3D indoor view)
+- Footprints: `bun run fetch-footprints` regenerates `src/data/footprints.ts`
+  from OpenStreetMap — run it after adding a building, then commit the result.
+
+Coordinates are `[lng, lat]` — Google Maps shows "lat, lng", so flip the pair
+when pasting (the integrity tests catch swaps).
 
 Run `bun run test` after editing — the data-integrity suite catches duplicate
 ids, broken building references, duplicate slot codes, and bad prices. Commit
@@ -43,8 +49,8 @@ deep links there need a separate `404.html` redirect workaround.
 
 ## Roadmap
 
-- Phase 2: 3D indoor view per building (react-three-fiber) — the data model
-  already carries `floor` and `position` per machine
+- ~~Phase 2: 3D indoor view per building~~ — shipped: open a building and hit
+  the 🏢 Inside toggle
 - Real inventory from in-person surveys
 
 See `docs/superpowers/specs/` for the full design.
