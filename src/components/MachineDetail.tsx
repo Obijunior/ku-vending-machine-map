@@ -24,9 +24,9 @@ export default function MachineDetail() {
         <table className="slot-table">
           <thead>
             <tr>
-              <th>Slot</th>
-              <th>Item</th>
-              <th>Price</th>
+              <th scope="col">Slot</th>
+              <th scope="col">Item</th>
+              <th scope="col">Price</th>
             </tr>
           </thead>
           <tbody>

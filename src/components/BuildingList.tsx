@@ -27,7 +27,7 @@ export default function BuildingList() {
         placeholder="Search buildings or snacks…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        aria-label="Search buildings or items"
+        aria-label="Search buildings or snacks"
       />
 
       {searching && results.items.length > 0 && (
@@ -66,7 +66,9 @@ export default function BuildingList() {
                       <span className="result-sub">
                         {buildingMachines.length} machine
                         {buildingMachines.length === 1 ? '' : 's'}{' '}
-                        {buildingMachines.map((m) => TYPE_ICONS[m.type]).join(' ')}
+                        <span aria-hidden="true">
+                          {buildingMachines.map((m) => TYPE_ICONS[m.type]).join(' ')}
+                        </span>
                       </span>
                     </Link>
                   </li>

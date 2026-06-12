@@ -53,6 +53,25 @@ describe('machines', () => {
         Number.isNaN(Date.parse(machine.lastUpdated)),
         `unparseable lastUpdated on ${machine.id}: ${machine.lastUpdated}`,
       ).toBe(false)
+      expect(
+        machine.lastUpdated,
+        `lastUpdated not YYYY-MM-DD on ${machine.id}: ${machine.lastUpdated}`,
+      ).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+  })
+
+  it('have non-empty slot codes and items', () => {
+    for (const machine of machines) {
+      for (const slot of machine.slots) {
+        expect(
+          slot.code.trim() !== '',
+          `empty slot code in ${machine.id}`,
+        ).toBe(true)
+        expect(
+          slot.item.trim() !== '',
+          `empty slot item in ${machine.id} slot ${slot.code}`,
+        ).toBe(true)
+      }
     }
   })
 })

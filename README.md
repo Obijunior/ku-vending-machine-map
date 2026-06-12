@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# KU Vending Machine Map
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A map of vending machines on the University of Kansas Lawrence campus: a tilted
+3D campus map, per-building machine lists, slot-level inventory, and item
+search ("where can I get Hot Cheetos?").
 
-Currently, two official plugins are available:
+Fully static — no backend. All data lives in typed TypeScript files and is
+maintained by editing them and redeploying.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+Bun · Vite · TypeScript · React · react-router · MapLibre GL (OpenFreeMap
+tiles) · Vitest
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun install
+bun run dev      # dev server at http://localhost:5173
+bun run test     # run the test suite
+bun run lint     # eslint
+bun run build    # production build in dist/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Updating the data
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Buildings: `src/data/buildings.ts` (id, name, [lng, lat])
+- Machines & inventory: `src/data/machines.ts` (slot code, item, price in cents)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Run `bun run test` after editing — the data-integrity suite catches duplicate
+ids, broken building references, duplicate slot codes, and bad prices. Commit
+and push to redeploy.
+
+A machine with `slots: []` shows as "inventory not surveyed yet" — current
+inventory is placeholder data until each machine is surveyed in person.
+
+## Deployment
+
+`bun run build` produces a static `dist/` for any static host (Netlify,
+Cloudflare Pages, GitHub Pages). `public/_redirects` provides the SPA fallback
+on Netlify/Cloudflare so deep links work.
+
+## Roadmap
+
+- Phase 2: 3D indoor view per building (react-three-fiber) — the data model
+  already carries `floor` and `position` per machine
+- Real inventory from in-person surveys
+
+See `docs/superpowers/specs/` for the full design.
