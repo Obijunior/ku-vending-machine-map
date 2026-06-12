@@ -38,7 +38,8 @@ inventory is placeholder data until each machine is surveyed in person.
 
 `bun run build` produces a static `dist/` for any static host (Netlify,
 Cloudflare Pages, GitHub Pages). `public/_redirects` provides the SPA fallback
-on Netlify/Cloudflare so deep links work.
+on Netlify/Cloudflare so deep links work. GitHub Pages ignores `_redirects` —
+deep links there need a separate `404.html` redirect workaround.
 
 ## Roadmap
 
