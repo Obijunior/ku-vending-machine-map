@@ -113,8 +113,18 @@ async function main() {
     )
     const bestCentroid = centroidOf(best)
     const dist = Math.round(distanceMeters(bestCentroid, building.coordinates))
-    console.log(`${building.id}: ${best.length} vertices, centroid ${dist}m from pin`)
+    const isFallback = containing.length === 0
+    const fallbackNote = isFallback
+      ? ' (FALLBACK MATCH — pin is outside the polygon; consider moving the pin inside the building and re-running)'
+      : ''
+    console.log(`${building.id}: ${best.length} vertices, centroid ${dist}m from pin${fallbackNote}`)
     footprints[building.id] = best
+  }
+
+  for (const building of Object.keys(footprints)) {
+    if (!/^[a-z0-9-]+$/.test(building)) {
+      throw new Error(`building id not kebab-case-safe for codegen: ${building}`)
+    }
   }
 
   const lines = [
