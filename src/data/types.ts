@@ -4,6 +4,8 @@ export type Building = {
   name: string
   /** [longitude, latitude] — map marker + camera target */
   coordinates: [number, number]
+  /** Actual floor numbers, ascending, e.g. [1, 2, 3]; basements like [0, 1] work too */
+  floors: number[]
 }
 
 export type MachineType = 'drink' | 'snack' | 'combo'
@@ -28,6 +30,6 @@ export type VendingMachine = {
   lastUpdated: string
   /** Empty array = machine exists but inventory not surveyed yet */
   slots: Slot[]
-  /** Phase 2: position on the floor plan for the 3D view */
-  position?: { x: number; y: number }
+  /** [longitude, latitude] of the machine inside the building — same order as Building.coordinates */
+  position?: [number, number]
 }

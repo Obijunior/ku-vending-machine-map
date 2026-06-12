@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { buildings } from './buildings'
 import { machines } from './machines'
 
+// Bounding box for the Lawrence area — catches lat/lng swaps and stray pastes.
+const LNG_MIN = -95.35
+const LNG_MAX = -95.15
+const LAT_MIN = 38.9
+const LAT_MAX = 39.0
+
 describe('buildings', () => {
   it('have unique ids', () => {
     const ids = buildings.map((b) => b.id)
@@ -18,13 +24,25 @@ describe('buildings', () => {
     for (const building of buildings) {
       const [lng, lat] = building.coordinates
       expect(
-        lng >= -95.35 && lng <= -95.15,
+        lng >= LNG_MIN && lng <= LNG_MAX,
         `longitude out of range for ${building.id}: ${lng} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
       ).toBe(true)
       expect(
-        lat >= 38.9 && lat <= 39.0,
+        lat >= LAT_MIN && lat <= LAT_MAX,
         `latitude out of range for ${building.id}: ${lat} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
       ).toBe(true)
+    }
+  })
+
+  it('have non-empty, strictly ascending floors', () => {
+    for (const building of buildings) {
+      expect(building.floors.length, `no floors for ${building.id}`).toBeGreaterThan(0)
+      for (let i = 1; i < building.floors.length; i++) {
+        expect(
+          building.floors[i] > building.floors[i - 1],
+          `floors not strictly ascending for ${building.id}`,
+        ).toBe(true)
+      }
     }
   })
 })
@@ -88,6 +106,32 @@ describe('machines', () => {
           `empty slot item in ${machine.id} slot ${slot.code}`,
         ).toBe(true)
       }
+    }
+  })
+
+  it('are on floors their building actually has', () => {
+    const byId = new Map(buildings.map((b) => [b.id, b]))
+    for (const machine of machines) {
+      const building = byId.get(machine.buildingId)
+      expect(
+        building !== undefined && building.floors.includes(machine.floor),
+        `machine ${machine.id} is on floor ${machine.floor}, not in ${machine.buildingId}'s floors`,
+      ).toBe(true)
+    }
+  })
+
+  it('have positions inside the Lawrence area when present', () => {
+    for (const machine of machines) {
+      if (!machine.position) continue
+      const [lng, lat] = machine.position
+      expect(
+        lng >= LNG_MIN && lng <= LNG_MAX,
+        `position longitude out of range for ${machine.id}: ${lng} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
+      ).toBe(true)
+      expect(
+        lat >= LAT_MIN && lat <= LAT_MAX,
+        `position latitude out of range for ${machine.id}: ${lat} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
+      ).toBe(true)
     }
   })
 })
