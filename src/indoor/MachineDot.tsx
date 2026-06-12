@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Html } from '@react-three/drei'
 import { machineLabel } from '../lib/format'
 import { lngLatToLocal, type LngLat } from './projection'
@@ -32,9 +32,14 @@ export default function MachineDot({
   const [east, north] = positioned ? lngLatToLocal(machine.position!, origin) : [0, 0]
   const color = selected ? '#e8000d' : '#0051ba'
 
+  useEffect(() => () => {
+    document.body.style.cursor = ''
+  }, [])
+
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
     onSelect(machine.id)
+    document.body.style.cursor = ''
   }
 
   return (

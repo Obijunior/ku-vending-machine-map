@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useNavigate } from 'react-router-dom'
@@ -15,10 +15,11 @@ export default function IndoorView({ building, machines, selectedMachineId }: Pr
   const navigate = useNavigate()
   const selectedFloor = machines.find((m) => m.id === selectedMachineId)?.floor
   const [activeFloor, setActiveFloor] = useState<number | 'all'>(selectedFloor ?? 'all')
-
-  useEffect(() => {
+  const [prevSelectedFloor, setPrevSelectedFloor] = useState(selectedFloor)
+  if (selectedFloor !== prevSelectedFloor) {
+    setPrevSelectedFloor(selectedFloor)
     if (selectedFloor !== undefined) setActiveFloor(selectedFloor)
-  }, [selectedFloor])
+  }
 
   return (
     <div className="indoor-view">
