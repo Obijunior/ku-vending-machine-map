@@ -11,6 +11,22 @@ describe('buildings', () => {
   it('exist', () => {
     expect(buildings.length).toBeGreaterThan(0)
   })
+
+  it('have [longitude, latitude] coordinates within the Lawrence area', () => {
+    // Coordinates are [lng, lat] (GeoJSON order). Google Maps shows "lat, lng",
+    // so a pasted-in-the-wrong-order pair lands far outside this bounding box.
+    for (const building of buildings) {
+      const [lng, lat] = building.coordinates
+      expect(
+        lng >= -95.35 && lng <= -95.15,
+        `longitude out of range for ${building.id}: ${lng} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
+      ).toBe(true)
+      expect(
+        lat >= 38.9 && lat <= 39.0,
+        `latitude out of range for ${building.id}: ${lat} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
+      ).toBe(true)
+    }
+  })
 })
 
 describe('machines', () => {
