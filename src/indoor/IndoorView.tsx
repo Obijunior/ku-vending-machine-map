@@ -35,7 +35,7 @@ export default function IndoorView({ building, machines, selectedMachineId }: Pr
           machines={machines}
           selectedMachineId={selectedMachineId}
           emphasizedFloor={activeFloor === 'all' ? null : activeFloor}
-          onSelectMachine={(id) => navigate(`/machine/${id}`)}
+          onSelectMachine={(id) => navigate(`/machine/${id}?view=inside`)}
         />
         <OrbitControls enableDamping minDistance={radius * 0.4} maxDistance={radius * 6} target={[0, 4, 0]} />
       </Canvas>
