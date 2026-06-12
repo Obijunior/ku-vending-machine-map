@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildings } from './buildings'
+import { footprints } from './footprints'
 import { machines } from './machines'
 
 // Bounding box for the Lawrence area — catches lat/lng swaps and stray pastes.
@@ -132,6 +133,27 @@ describe('machines', () => {
         lat >= LAT_MIN && lat <= LAT_MAX,
         `position latitude out of range for ${machine.id}: ${lat} (did you paste "lat, lng" from Google Maps? This file uses [lng, lat])`,
       ).toBe(true)
+    }
+  })
+})
+
+describe('footprints', () => {
+  it('reference existing buildings', () => {
+    const buildingIds = new Set(buildings.map((b) => b.id))
+    for (const id of Object.keys(footprints)) {
+      expect(buildingIds.has(id), `footprint for unknown building: ${id}`).toBe(true)
+    }
+  })
+
+  it('have at least 3 vertices, all inside the Lawrence area', () => {
+    for (const [id, polygon] of Object.entries(footprints)) {
+      expect(polygon.length, `degenerate footprint for ${id}`).toBeGreaterThanOrEqual(3)
+      for (const [lng, lat] of polygon) {
+        expect(
+          lng >= LNG_MIN && lng <= LNG_MAX && lat >= LAT_MIN && lat <= LAT_MAX,
+          `footprint vertex out of range for ${id}: [${lng}, ${lat}]`,
+        ).toBe(true)
+      }
     }
   })
 })
