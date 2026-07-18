@@ -56,6 +56,15 @@ describe('AppLayout', () => {
     expect(screen.getByRole('button', { name: /list/i })).toBeInTheDocument()
   })
 
+  it('links to the contributing guide', () => {
+    renderAt('/')
+    const link = screen.getByRole('link', { name: /want to contribute/i })
+    expect(link).toHaveAttribute(
+      'href',
+      'https://github.com/Obijunior/ku-vending-machine-map/blob/main/CONTRIBUTING.md',
+    )
+  })
+
   it('only passes buildings with machines to MapView', () => {
     renderAt('/')
     const expected = buildings.filter(

@@ -41,6 +41,15 @@ export function AppLayout() {
           <Route path="/machine/:id" element={<MachineDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <footer className="sidebar-footer">
+          <a
+            href="https://github.com/Obijunior/ku-vending-machine-map/blob/main/CONTRIBUTING.md"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Want to contribute?
+          </a>
+        </footer>
       </aside>
       <div className={`map-pane ${mobileView === 'list' ? 'mobile-hidden' : ''}`}>
         <MapPane selectedBuildingId={buildingId} selectedMachineId={machineId} />
