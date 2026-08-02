@@ -49,8 +49,5 @@ deep links there need a separate `404.html` redirect workaround.
 
 ## Roadmap
 
-- ~~Phase 2: 3D indoor view per building~~ — shipped: open a building and hit
-  the 🏢 Inside toggle
+- finish adding locations
 - Real inventory from in-person surveys
-
-See `docs/superpowers/specs/` for the full design.

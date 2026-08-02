@@ -66,8 +66,8 @@ export const machines: VendingMachine[] = [
     buildingId: 'anschutz',
     type: 'snack',
     floor: 3,
-    locationNote: 'Third floor study area',
-    lastUpdated: '2026-06-11',
+    locationNote: 'Third floor, near the east windows, by the FitDesks and study room 305', // sourced: lib.ku.edu/locations/anschutz
+    lastUpdated: '2026-07-22',
     slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
   },
   {
@@ -109,6 +109,15 @@ export const machines: VendingMachine[] = [
     floor: 1,
     locationNote: 'Area by Burns-Mac lounge',
     lastUpdated: '2026-06-11',
+    slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
+  },
+  {
+    id: 'ambler-rec-1-combo',
+    buildingId: 'ambler-rec',
+    type: 'combo',
+    floor: 1,
+    locationNote: 'Lobby, near the main entrance', // sourced: recreation.ku.edu/indoor-facilities
+    lastUpdated: '2026-07-22',
     slots: [], // not surveyed yet — exercises the "inventory not surveyed" UI
   },
 ]

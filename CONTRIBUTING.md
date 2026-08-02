@@ -6,7 +6,7 @@ means editing those files and opening a pull request.
 
 ## Dev setup
 
-You'll need [Bun](https://bun.sh).
+I used [bun](https://bun.sh). npm will also work just fine for the below commands, but be wary of package-lock.json drift and running the `fetch-footprints` script
 
 ```bash
 bun install

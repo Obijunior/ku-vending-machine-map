@@ -14,4 +14,10 @@ export const buildings: Building[] = [
   { id: 'slawson', name: 'Slawson Hall', coordinates: [-95.25178839472429, 38.95756440933736], floors: [1] },
   { id: 'burge-union', name: 'Burge Union', coordinates: [-95.254879089599, 38.95516935200369], floors: [1] },
   { id: 'gray-little', name: 'Gray-Little Hall', coordinates: [-95.25548715495076, 38.95558500179917], floors: [1] },
+  // No separate machine entry: Spahr's group study rooms are the same space as the
+  // "LEEP2 study rooms" (lib.ku.edu/spahr/reserve-a-study-room) after the 2015 renovation
+  // opened Spahr into LEEP2 — its vending machines are the ones already listed under leep2.
+  { id: 'spahr', name: 'Spahr Engineering Library', coordinates: [-95.2533969, 38.9578982], floors: [1, 2] },
+  // Confirmed vending presence via recreation.ku.edu.
+  { id: 'ambler-rec', name: 'Ambler Student Recreation Fitness Center', coordinates: [-95.2479293, 38.9525116], floors: [1] },
 ]
