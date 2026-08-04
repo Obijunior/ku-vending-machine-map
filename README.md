@@ -2,57 +2,25 @@
 
 A map of vending machines on the University of Kansas Lawrence campus: a tilted
 3D campus map, per-building machine lists, slot-level inventory, and item
-search
+search.
 
 Fully static. All data lives in TypeScript files and is
 maintained by editing them and redeploying.
 
-## Stack
+Currently hosted at https://vending.henrynwagwu.me
 
-### Frontend
-- React / Typescript
-- Phosphor Icons
-- react-router
-- MapLibre GL (OpenFreeMap tiles)
+> **Data status:** Building coverage and machine inventory are incomplete.
+> Some inventory is placeholder data until it can be verified in person.
 
-### Dev
-- Bun
-- Vite
 
-## Development
+## Contributing
 
-```bash
-bun install
-bun run dev      # dev server at http://localhost:5173
-bun run test     # run the test suite
-bun run lint     # eslint
-bun run build    # production build in dist/
-```
+Machine locations and inventory are maintained directly in this repository.
+Contributions from in-person surveys are especially valuable.
 
-## Updating the data
+See [CONTRIBUTING.md](CONTRIBUTING.md) for data formats, development setup,
+validation commands, and pull request instructions.
 
-- Buildings: `src/data/buildings.ts` (id, name, `[lng, lat]`, `floors`)
-- Machines & inventory: `src/data/machines.ts` (slot code, item, price in cents;
-  optional `position: [lng, lat]` places the machine in the 3D indoor view)
-- Footprints: `bun run fetch-footprints` regenerates `src/data/footprints.ts`
-  from OpenStreetMap — run it after adding a building, then commit the result.
-
-Coordinates are `[lng, lat]` — Google Maps shows "lat, lng", so flip the pair
-when pasting (the integrity tests catch swaps).
-
-Run `bun run test` after editing — the data-integrity suite catches duplicate
-ids, broken building references, duplicate slot codes, and bad prices. Commit
-and push to redeploy.
-
-A machine with `slots: []` shows as "inventory not surveyed yet" — current
-inventory is placeholder data until each machine is surveyed in person.
-
-## Deployment
-
-`bun run build` produces a static `dist/` for any static host (Netlify,
-Cloudflare Pages, GitHub Pages). `public/_redirects` provides the SPA fallback
-on Netlify/Cloudflare so deep links work. GitHub Pages ignores `_redirects` —
-deep links there need a separate `404.html` redirect workaround.
 
 ## Roadmap
 

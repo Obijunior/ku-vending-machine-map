@@ -1,46 +1,195 @@
 # Contributing
 
-Thanks for wanting to help map KU's vending machines! The site is fully
-static — all data lives in typed TypeScript files, so contributing mostly
-means editing those files and opening a pull request.
+Thanks for helping map vending machines on the University of Kansas Lawrence
+campus. The application is fully static, and its data is stored in typed
+TypeScript files. Contributions that add or verify real machine locations and
+inventory are especially valuable.
 
-## Dev setup
+## Ways to contribute
 
-I used [bun](https://bun.sh). npm will also work just fine for the below commands, but be wary of package-lock.json drift and running the `fetch-footprints` script
+You can help by:
+
+- Adding or correcting a building
+- Adding, locating, or surveying a vending machine
+- Updating item names, slot codes, or prices from an in-person survey
+- Fixing a bug or improving the application
+
+
+
+## Development setup
+
+[Bun](https://bun.sh) is the supported package manager and is required by the
+footprint-generation script. Using Bun also avoids creating a conflicting
+`package-lock.json`.
 
 ```bash
+git clone https://github.com/Obijunior/ku-vending-machine-map.git
+cd ku-vending-machine-map
 bun install
-bun run dev      # dev server at http://localhost:5173
-bun run test     # run the test suite
-bun run lint     # eslint
+bun run dev
 ```
 
-## Contributing data (the main way to help)
+The development server is available at <http://localhost:5173> by default.
 
-- **Buildings:** `src/data/buildings.ts` — id, name, `[lng, lat]`, `floors`.
-- **Machines & inventory:** `src/data/machines.ts` — slot code, item, price
-  in cents; an optional `position: [lng, lat]` places the machine in the 3D
-  indoor view. A machine with `slots: []` shows as "inventory not surveyed
-  yet", so partial info is still useful.
-- **Footprints:** after adding a building, run `bun run fetch-footprints` to
-  regenerate `src/data/footprints.ts` from OpenStreetMap and commit the
-  result.
+## Contributing data
 
-Coordinates are `[lng, lat]` — Google Maps shows "lat, lng", so flip the pair
-when pasting. The data-integrity tests catch swaps, duplicate ids, broken
-building references, duplicate slot codes, and bad prices.
+Application data is maintained in:
 
-Surveyed a machine in person? Even a single machine's real inventory is a
-great contribution — most inventory is still placeholder data.
+- `src/data/buildings.ts` for buildings and campus coordinates
+- `src/data/machines.ts` for machines, locations, and inventory
+- `src/data/footprints.ts` for generated OpenStreetMap building footprints
+
+### Adding a building
+
+Add a building to `src/data/buildings.ts`:
+
+```ts
+{
+  id: 'new-building',
+  name: 'New Building',
+  coordinates: [-95.255, 38.956],
+  floors: [1, 2, 3],
+}
+```
+
+Building fields follow these rules:
+
+- `id` must be unique, stable, and URL-safe.
+- `name` should use the building's official display name.
+- `coordinates` must be `[longitude, latitude]`.
+- `floors` must contain the building's actual floor numbers in ascending order.
+  Use `0` for a basement or ground level when that matches the building data.
+
+After adding a building, regenerate its footprint as described in
+[Generating footprints](#generating-footprints).
+
+### Adding a machine
+
+Add a machine to `src/data/machines.ts`:
+
+```ts
+{
+  id: 'new-building-1-snack',
+  buildingId: 'new-building',
+  type: 'snack',
+  floor: 1,
+  locationNote: 'North hallway, beside room 100',
+  lastUpdated: '2026-08-04',
+  slots: [],
+}
+```
+
+Machine fields follow these rules:
+
+- `id` must be unique, stable, and URL-safe.
+- `buildingId` must match an existing building id.
+- `type` must be `drink`, `snack`, or `combo`.
+- `floor` must be one of the building's listed floors.
+- `locationNote` should help someone find the machine after entering the
+  building. Use an empty string if its location is not known.
+- `lastUpdated` must be the date the data was actually verified, formatted as
+  `YYYY-MM-DD`.
+- `slots` may be empty when the machine exists but its inventory has not been
+  surveyed.
+- An optional `position: [longitude, latitude]` places the machine within the
+  building footprint in the indoor 3D view.
+
+
+### Adding inventory
+
+Add each surveyed item to the machine's `slots` array:
+
+```ts
+slots: [
+  { code: 'A1', item: 'Pretzels', priceCents: 125 },
+  { code: 'A2', item: 'Hot Cheetos', priceCents: 175 },
+]
+```
+
+Inventory fields follow these rules:
+
+- `code` must match the code printed on the machine and be unique within that
+  machine.
+- `item` should match the product label without adding availability claims.
+- `priceCents` must be an integer number of cents; for example, `$1.75` is
+  `175`.
+
+Use `slots: []` when inventory has not been surveyed. Do not invent products or
+prices to make an entry look complete.
+
+### Coordinates
+
+All coordinates in this repository use `[longitude, latitude]`. Services such
+as Google Maps commonly display coordinates as `latitude, longitude`, so
+reverse that order before adding them.
+
+Building coordinates should identify the building itself. A machine's optional
+`position` should fall within or immediately adjacent to its building
+footprint.
+
+### Verification and sources
+
+In-person observations are preferred for machine locations, inventory, and
+prices. When using an online source for a building or location detail, include
+the source in the pull request and, when useful, in a short code comment.
+
+Only update `lastUpdated` for data that was actually checked. Describe what you
+verified in the pull request so reviewers can distinguish surveyed data from
+partial or externally sourced information.
+
+### Generating footprints
+
+After adding a building or correcting its coordinates, run:
+
+```bash
+bun run fetch-footprints
+```
+
+This regenerates `src/data/footprints.ts` from OpenStreetMap. Commit the updated
+file with the building change. Treat `footprints.ts` as generated output rather
+than editing its geometry by hand.
 
 ## Contributing code
 
-Bug fixes and features are welcome too. Match the existing style, and add or
-update tests alongside your change.
+Bug fixes and features are welcome. Follow the existing TypeScript and React
+style, keep changes focused, and update relevant tests when behavior changes.
 
-## Submitting
 
-1. Fork the repo and create a branch.
-2. Make your change.
-3. Run `bun run test` and `bun run lint` — both should pass.
-4. Open a pull request describing what you added or fixed.
+## Validation
+
+Before opening a pull request, run:
+
+```bash
+bun run test
+bun run lint
+bun run build
+```
+
+The data-integrity tests check common problems including swapped coordinates,
+duplicate ids, broken building references, invalid floors, duplicate slot
+codes, and invalid prices.
+
+Confirm that:
+
+- Coordinates use `[longitude, latitude]`.
+- Building and machine ids are unique and URL-safe.
+- Every `buildingId` references an existing building.
+- Machine floors exist in the associated building's `floors` array.
+- Prices are integer cents.
+- Slot codes are unique within each machine.
+- `lastUpdated` reflects the actual verification date.
+- Unknown inventory remains `slots: []` instead of being guessed.
+- Generated footprints are committed when applicable.
+- No `package-lock.json` or unrelated generated files were added.
+
+## Submitting a pull request
+
+1. Fork the repository and create a focused branch.
+2. Make and validate your changes.
+3. Commit only the files related to the contribution.
+4. Open a pull request that explains what changed and why.
+5. For data contributions, state how and when the information was verified and
+   include any external sources used.
+
+Small contributions are welcome. A single verified machine, corrected location,
+or surveyed inventory update is useful.
