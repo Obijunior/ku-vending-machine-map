@@ -11,5 +11,5 @@ export function machineLabel(machine: VendingMachine): string {
       : machine.type === 'drink'
         ? 'Drink machine'
         : 'Snack machine'
-  return machine.brand ? `${machine.brand} ${base[0].toLowerCase()}${base.slice(1)}` : base
+  return base
 }

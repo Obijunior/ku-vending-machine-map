@@ -23,7 +23,6 @@ export type VendingMachine = {
   id: string
   buildingId: string
   type: MachineType
-  brand?: string
   floor: number
   locationNote: string
   /** ISO date (YYYY-MM-DD) the data was last verified */

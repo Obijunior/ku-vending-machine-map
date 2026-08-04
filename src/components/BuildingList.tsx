@@ -47,10 +47,10 @@ export default function BuildingList() {
       <input
         type="search"
         className="search-box"
-        placeholder="Search buildings or snacks…"
+        placeholder="Search buildings or items..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        aria-label="Search buildings or snacks"
+        aria-label="Search buildings or items"
       />
 
       {searching && results.items.length > 0 && (

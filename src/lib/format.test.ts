@@ -30,13 +30,7 @@ function machineWith(overrides: Partial<VendingMachine>): VendingMachine {
 }
 
 describe('machineLabel', () => {
-  it('labels a branded drink machine', () => {
-    expect(machineLabel(machineWith({ type: 'drink', brand: 'Pepsi' }))).toBe(
-      'Pepsi drink machine',
-    )
-  })
-
-  it('labels an unbranded snack machine', () => {
+  it('labels a snack machine', () => {
     expect(machineLabel(machineWith({ type: 'snack' }))).toBe('Snack machine')
   })
 
