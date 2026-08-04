@@ -11,13 +11,13 @@ maintained by editing them and redeploying.
 
 ### Frontend
 - React / Typescript
+- Phosphor Icons
 - react-router
 - MapLibre GL (OpenFreeMap tiles)
 
 ### Dev
 - Bun
 - Vite
-- Vitest
 
 ## Development
 

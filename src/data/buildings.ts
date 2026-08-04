@@ -6,7 +6,7 @@ import type { Building } from './types'
 export const buildings: Building[] = [
   { id: 'wescoe', name: 'Wescoe Hall', coordinates: [-95.24786613062646, 38.95733354317885], floors: [1, 2] },
   { id: 'budig', name: 'Budig Hall', coordinates: [-95.24929921731922, 38.957850286251706], floors: [1] },
-  { id: 'anschutz', name: 'Anschutz Library', coordinates: [-95.24971408022004, 38.95734348402004], floors: [1, 2, 3] },
+  { id: 'anschutz', name: 'Anschutz Library', coordinates: [-95.24971408022004, 38.95734348402004], floors: [1, 2, 3, 4] },
   { id: 'kansas-union', name: 'Kansas Union', coordinates: [-95.24343779719167, 38.959518862700925], floors: [1] },
   { id: 'leep2', name: 'LEEP 2', coordinates: [-95.25404363428248, 38.95766529681259], floors: [1] },
   { id: 'learned', name: 'Learned Hall', coordinates: [-95.25413434652411, 38.95820161019933], floors: [1] },
@@ -14,9 +14,6 @@ export const buildings: Building[] = [
   { id: 'slawson', name: 'Slawson Hall', coordinates: [-95.25178839472429, 38.95756440933736], floors: [1] },
   { id: 'burge-union', name: 'Burge Union', coordinates: [-95.254879089599, 38.95516935200369], floors: [1] },
   { id: 'gray-little', name: 'Gray-Little Hall', coordinates: [-95.25548715495076, 38.95558500179917], floors: [1] },
-  // No separate machine entry: Spahr's group study rooms are the same space as the
-  // "LEEP2 study rooms" (lib.ku.edu/spahr/reserve-a-study-room) after the 2015 renovation
-  // opened Spahr into LEEP2 — its vending machines are the ones already listed under leep2.
-  { id: 'spahr', name: 'Spahr Engineering Library', coordinates: [-95.2533969, 38.9578982], floors: [1, 2] },
   { id: 'ambler-rec', name: 'Ambler Student Recreation Fitness Center', coordinates: [-95.2479293, 38.9525116], floors: [1] },
+  { id: 'cap-fed', name: 'Capitol Federal Hall', coordinates: [-95.24999, 38.953835], floors: [1, 2, 3, 4] },
 ]

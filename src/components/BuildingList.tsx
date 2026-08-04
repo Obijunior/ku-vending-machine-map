@@ -1,3 +1,4 @@
+import { CookieIcon, PintGlassIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { buildings } from '../data/buildings'
@@ -7,10 +8,32 @@ import { formatPrice, machineLabel } from '../lib/format'
 import { search } from '../lib/search'
 import type { MachineType } from '../data/types'
 
-const TYPE_ICONS: Record<MachineType, string> = {
-  drink: '🥤',
-  snack: '🍫',
-  combo: '🥤🍫',
+const MACHINE_TYPE_NAMES: Record<MachineType, string> = {
+  drink: 'Drink',
+  snack: 'Snack',
+  combo: 'Combination',
+}
+
+function MachineTypeIcon({ type }: { type: MachineType }) {
+  return (
+    <span
+      className={`machine-type-icon machine-type-icon--${type}`}
+      role="img"
+      aria-label={`${MACHINE_TYPE_NAMES[type]} machine`}
+    >
+      {type !== 'snack' && (
+        <PintGlassIcon className="machine-type-glyph" size={18} weight="duotone" aria-hidden="true" />
+      )}
+      {type !== 'drink' && (
+        <CookieIcon
+          className="machine-type-glyph"
+          size={18}
+          weight="duotone"
+          aria-hidden="true"
+        />
+      )}
+    </span>
+  )
 }
 
 export default function BuildingList() {
@@ -66,8 +89,10 @@ export default function BuildingList() {
                       <span className="result-sub">
                         {buildingMachines.length} machine
                         {buildingMachines.length === 1 ? '' : 's'}{' '}
-                        <span aria-hidden="true">
-                          {buildingMachines.map((m) => TYPE_ICONS[m.type]).join(' ')}
+                        <span className="machine-type-icons">
+                          {buildingMachines.map((machine) => (
+                            <MachineTypeIcon key={machine.id} type={machine.type} />
+                          ))}
                         </span>
                       </span>
                     </Link>

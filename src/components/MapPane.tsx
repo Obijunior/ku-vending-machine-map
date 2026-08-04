@@ -1,3 +1,4 @@
+import { Buildings, MapTrifold } from '@phosphor-icons/react'
 import { Component, Suspense, lazy, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { buildings } from '../data/buildings'
@@ -47,16 +48,20 @@ export default function MapPane({ selectedBuildingId, selectedMachineId }: Props
           <button
             type="button"
             className={inside ? '' : 'view-toggle--active'}
+            aria-pressed={!inside}
             onClick={() => setSearchParams({})}
           >
-            🗺️ Campus
+            <MapTrifold size={17} weight="duotone" aria-hidden="true" />
+            <span>Campus</span>
           </button>
           <button
             type="button"
             className={inside ? 'view-toggle--active' : ''}
+            aria-pressed={inside}
             onClick={() => setSearchParams({ view: 'inside' })}
           >
-            🏢 Inside
+            <Buildings size={17} weight="duotone" aria-hidden="true" />
+            <span>Inside</span>
           </button>
         </div>
       )}

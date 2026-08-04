@@ -88,6 +88,43 @@
   margin-top: 2px;
 }
 
+.machine-type-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: -6px;
+}
+
+.machine-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.machine-type-icon--drink {
+  color: #1e659c;
+  background: #e7f3fb;
+}
+
+.machine-type-icon--snack {
+  color: #8b571f;
+  background: #fff1dc;
+}
+
+.machine-type-icon--combo {
+  width: 36px;
+  color: #674b92;
+  background: #f1eafd;
+}
+
+.machine-type-icon--combo .machine-type-glyph {
+  width: 16px;
+  height: 16px;
+}
+
 .back-link {
   display: inline-block;
   font-size: 13px;
@@ -201,6 +238,9 @@
 
 .mobile-toggle {
   display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 @media (max-width: 768px) {
@@ -214,7 +254,7 @@
   }
 
   .mobile-toggle {
-    display: block;
+    display: flex;
     position: fixed;
     bottom: 24px;
     left: 50%;
@@ -291,6 +331,9 @@
 }
 
 .view-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: none;
   border-radius: 999px;
   padding: 6px 12px;

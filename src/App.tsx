@@ -1,3 +1,4 @@
+import { ListBullets, MapTrifold } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { BrowserRouter, Route, Routes, matchPath, useLocation } from 'react-router-dom'
 import { getMachineById } from './data/queries'
@@ -59,7 +60,17 @@ export function AppLayout() {
         className="mobile-toggle"
         onClick={() => setMobileView(mobileView === 'list' ? 'map' : 'list')}
       >
-        {mobileView === 'list' ? '🗺️ Map' : '📋 List'}
+        {mobileView === 'list' ? (
+          <>
+            <MapTrifold size={19} weight="duotone" aria-hidden="true" />
+            <span>Map</span>
+          </>
+        ) : (
+          <>
+            <ListBullets size={19} weight="duotone" aria-hidden="true" />
+            <span>List</span>
+          </>
+        )}
       </button>
     </div>
   )
