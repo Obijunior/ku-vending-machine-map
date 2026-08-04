@@ -23,15 +23,22 @@ function renderAt(path: string) {
 }
 
 describe('MapPane', () => {
-  it('shows no toggle and only the campus map at the root', () => {
+  // MapLibre is ~800KB; it loads as its own chunk so the sidebar can paint first.
+  it('loads the campus map lazily rather than on first paint', async () => {
     renderAt('/')
-    expect(screen.getByTestId('map-stub')).toBeInTheDocument()
+    expect(screen.queryByTestId('map-stub')).not.toBeInTheDocument()
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
+  })
+
+  it('shows no toggle and only the campus map at the root', async () => {
+    renderAt('/')
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /inside/i })).not.toBeInTheDocument()
   })
 
-  it('shows the toggle on a building page, campus by default', () => {
+  it('shows the toggle on a building page, campus by default', async () => {
     renderAt('/building/wescoe')
-    expect(screen.getByTestId('map-stub')).toBeInTheDocument()
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /inside/i })).toBeInTheDocument()
     expect(screen.queryByTestId('indoor-stub')).not.toBeInTheDocument()
   })
@@ -55,11 +62,11 @@ describe('MapPane', () => {
     renderAt('/building/wescoe?view=inside')
     await screen.findByTestId('indoor-stub')
     await user.click(screen.getByRole('button', { name: /campus/i }))
-    expect(screen.getByTestId('map-stub')).toBeInTheDocument()
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
   })
 
-  it('ignores ?view=inside at the root', () => {
+  it('ignores ?view=inside at the root', async () => {
     renderAt('/?view=inside')
-    expect(screen.getByTestId('map-stub')).toBeInTheDocument()
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
   })
 })

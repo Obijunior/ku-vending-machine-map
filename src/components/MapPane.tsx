@@ -1,9 +1,11 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import MapView from './MapView'
 import { buildings } from '../data/buildings'
 import { getBuildingById, getMachinesForBuilding } from '../data/queries'
 
+// Both renderers are heavy (MapLibre ~800KB, three.js ~900KB) and neither is
+// needed for the sidebar. Splitting them lets the machine list paint first.
+const MapView = lazy(() => import('./MapView'))
 const IndoorView = lazy(() => import('../indoor/IndoorView'))
 
 const buildingsWithMachines = buildings.filter(
@@ -70,7 +72,9 @@ export default function MapPane({ selectedBuildingId, selectedMachineId }: Props
           </Suspense>
         </IndoorErrorBoundary>
       ) : (
-        <MapView buildings={buildingsWithMachines} selectedBuildingId={selectedBuildingId} />
+        <Suspense fallback={<div className="pane-note">Loading map…</div>}>
+          <MapView buildings={buildingsWithMachines} selectedBuildingId={selectedBuildingId} />
+        </Suspense>
       )}
     </>
   )

@@ -165,7 +165,11 @@
   position: relative;
 }
 
-.map-container {
+/* Two selectors on purpose: the map div also carries maplibre-gl.css's
+   .maplibregl-map { position: relative }, and MapView is code-split so its
+   stylesheet lands *after* this one. Equal specificity would lose that race and
+   collapse the map to 0px tall. */
+.map-pane .map-container {
   position: absolute;
   inset: 0;
 }

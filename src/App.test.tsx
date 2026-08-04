@@ -21,11 +21,11 @@ function renderAt(path: string) {
 }
 
 describe('AppLayout', () => {
-  it('shows the building list and map at the root', () => {
+  it('shows the building list and map at the root', async () => {
     renderAt('/')
     expect(screen.getByRole('searchbox')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Wescoe Hall/ })).toBeInTheDocument()
-    expect(screen.getByTestId('map-stub')).toBeInTheDocument()
+    expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
   })
 
   it('navigates from building list to building detail', async () => {
@@ -65,12 +65,12 @@ describe('AppLayout', () => {
     )
   })
 
-  it('only passes buildings with machines to MapView', () => {
+  it('only passes buildings with machines to MapView', async () => {
     renderAt('/')
     const expected = buildings.filter(
       (b) => getMachinesForBuilding(b.id).length > 0,
     ).length
-    expect(screen.getByTestId('map-stub')).toHaveAttribute(
+    expect(await screen.findByTestId('map-stub')).toHaveAttribute(
       'data-marker-count',
       String(expected),
     )

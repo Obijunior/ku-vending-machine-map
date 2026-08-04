@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Map as MaplibreMap, Marker, NavigationControl } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useNavigate } from 'react-router-dom'
+import { campusBounds } from '../lib/bounds'
 import type { Building } from '../data/types'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
@@ -26,6 +27,11 @@ export default function MapView({ buildings, selectedBuildingId }: Props) {
       center: CAMPUS_CENTER,
       zoom: 15.5,
       pitch: 45,
+      // Campus is the whole point of this map. Fencing the camera in keeps the
+      // tile requests to the couple of square kilometres we care about — and
+      // stops people from getting lost in Kansas.
+      maxBounds: campusBounds(buildings.map((b) => b.coordinates)),
+      minZoom: 13,
     })
     map.addControl(new NavigationControl({ visualizePitch: true }))
     mapRef.current = map
