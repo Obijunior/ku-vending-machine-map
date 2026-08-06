@@ -1,5 +1,5 @@
 import { ListBullets, MapTrifold } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, matchPath, useLocation } from 'react-router-dom'
 import type { Coordinates, UserOrigin } from './data/types'
 import { getMachineById } from './data/queries'
@@ -10,6 +10,14 @@ import MachineDetail from './components/MachineDetail'
 import MapPane from './components/MapPane'
 import NotFound from './components/NotFound'
 import './App.css'
+
+const MOBILE_VIEWPORT_QUERY = '(max-width: 768px)'
+
+function matchesMobileViewport(): boolean {
+  return typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia(MOBILE_VIEWPORT_QUERY).matches
+}
 
 function useSelection(): { buildingId: string | null; machineId: string | null } {
   const { pathname } = useLocation()
@@ -40,10 +48,28 @@ function geolocationErrorMessage(error: GeolocationPositionError): string {
 export function AppLayout() {
   const { buildingId, machineId } = useSelection()
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
+  const [isMobileViewport, setIsMobileViewport] = useState(matchesMobileViewport)
+  // The mobile layout starts on the list. Avoid downloading and initializing
+  // MapLibre until the visitor actually opens the hidden map pane.
+  const [hasRequestedMap, setHasRequestedMap] = useState(() => !matchesMobileViewport())
   const [origin, setOrigin] = useState<UserOrigin | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [isPickingOrigin, setIsPickingOrigin] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+
+    const viewportQuery = window.matchMedia(MOBILE_VIEWPORT_QUERY)
+    const updateViewport = () => {
+      setIsMobileViewport(viewportQuery.matches)
+      if (!viewportQuery.matches) setHasRequestedMap(true)
+    }
+
+    updateViewport()
+    viewportQuery.addEventListener('change', updateViewport)
+    return () => viewportQuery.removeEventListener('change', updateViewport)
+  }, [])
 
   function useDeviceLocation() {
     setLocationError(null)
@@ -72,7 +98,14 @@ export function AppLayout() {
     setLocationError(null)
     setIsLocating(false)
     setIsPickingOrigin(true)
+    setHasRequestedMap(true)
     setMobileView('map')
+  }
+
+  function toggleMobileView() {
+    const nextView = mobileView === 'list' ? 'map' : 'list'
+    if (nextView === 'map') setHasRequestedMap(true)
+    setMobileView(nextView)
   }
 
   function pickOrigin(coordinates: Coordinates) {
@@ -120,19 +153,21 @@ export function AppLayout() {
         </footer>
       </aside>
       <div className={`map-pane ${mobileView === 'list' ? 'mobile-hidden' : ''}`}>
-        <MapPane
-          selectedBuildingId={buildingId}
-          selectedMachineId={machineId}
-          origin={origin}
-          isPickingOrigin={isPickingOrigin}
-          onPickOrigin={pickOrigin}
-          onCancelOriginPick={() => setIsPickingOrigin(false)}
-        />
+        {(hasRequestedMap || !isMobileViewport) && (
+          <MapPane
+            selectedBuildingId={buildingId}
+            selectedMachineId={machineId}
+            origin={origin}
+            isPickingOrigin={isPickingOrigin}
+            onPickOrigin={pickOrigin}
+            onCancelOriginPick={() => setIsPickingOrigin(false)}
+          />
+        )}
       </div>
       <button
         type="button"
         className="mobile-toggle"
-        onClick={() => setMobileView(mobileView === 'list' ? 'map' : 'list')}
+        onClick={toggleMobileView}
       >
         {mobileView === 'list' ? (
           <>
