@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "fetch-footprints": "bun scripts/fetch-footprints.ts"
+    "fetch-footprints": "bun scripts/fetch-footprints.ts",
+    "fetch-ku-gis": "bun scripts/fetch-ku-gis.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

@@ -1,8 +1,9 @@
 # Contributing
 
 Thanks for helping map vending machines on the University of Kansas Lawrence
-campus. The application is fully static, and its data is stored in typed
-TypeScript files. Contributions that add or verify real machine locations and
+campus. The application is fully static: machine and building records are typed
+TypeScript data, while campus boundaries and indoor floor polygons are committed
+GeoJSON snapshots. Contributions that add or verify real machine locations and
 inventory are especially valuable.
 
 ## Ways to contribute
@@ -12,14 +13,13 @@ You can help by:
 - Adding or correcting a building
 - Adding, locating, or surveying a vending machine
 - Updating item names, slot codes, or prices from an in-person survey
+- Refreshing generated map or floor-plan data
 - Fixing a bug or improving the application
-
-
 
 ## Development setup
 
 [Bun](https://bun.sh) is the supported package manager and is required by the
-footprint-generation script. Using Bun also avoids creating a conflicting
+data-generation scripts. Using Bun also avoids creating a conflicting
 `package-lock.json`.
 
 ```bash
@@ -35,9 +35,14 @@ The development server is available at <http://localhost:5173> by default.
 
 Application data is maintained in:
 
-- `src/data/buildings.ts` for buildings and campus coordinates
+- `src/data/buildings.ts` for buildings, coordinates, and KU GIS identifiers
 - `src/data/machines.ts` for machines, locations, and inventory
 - `src/data/footprints.ts` for generated OpenStreetMap building footprints
+- `public/data/ku-districts.geojson` for the generated campus district polygons
+- `public/data/ku-floors/*.geojson` for generated, per-building floor polygons
+
+Files under `public/data/` are served locally with the application. Visitors do
+not query KU's GIS server directly.
 
 ### Adding a building
 
@@ -48,6 +53,7 @@ Add a building to `src/data/buildings.ts`:
   id: 'new-building',
   name: 'New Building',
   coordinates: [-95.255, 38.956],
+  gisLocationId: '123',
   floors: [1, 2, 3],
 }
 ```
@@ -57,11 +63,16 @@ Building fields follow these rules:
 - `id` must be unique, stable, and URL-safe.
 - `name` should use the building's official display name.
 - `coordinates` must be `[longitude, latitude]`.
-- `floors` must contain the building's actual floor numbers in ascending order.
-  Use `0` for a basement or ground level when that matches the building data.
+- `gisLocationId` is optional. When present, it must match the building-location
+  identifier in KU Smart Campus layer 4. It lets the generator create the
+  building's official floor snapshot.
+- `floors` must contain the known floor numbers used by machine records in
+  ascending order. The indoor view supplements this list with numeric levels
+  found in the generated KU floor snapshot.
 
-After adding a building, regenerate its footprint as described in
-[Generating footprints](#generating-footprints).
+After adding a building, regenerate its OpenStreetMap footprint and, when it has
+a KU GIS identifier, the KU GIS snapshots as described in
+[Generating geographic data](#generating-geographic-data).
 
 ### Adding a machine
 
@@ -94,7 +105,6 @@ Machine fields follow these rules:
 - An optional `position: [longitude, latitude]` places the machine within the
   building footprint in the indoor 3D view.
 
-
 ### Adding inventory
 
 Add each surveyed item to the machine's `slots` array:
@@ -111,8 +121,8 @@ Inventory fields follow these rules:
 - `code` must match the code printed on the machine and be unique within that
   machine.
 - `item` should match the product label without adding availability claims.
-- `priceCents` must be an integer number of cents; for example, `$1.75` is
-  `175`.
+- `priceCents` must be a positive integer number of cents; for example, `$1.75`
+  is `175`.
 
 Use `slots: []` when inventory has not been surveyed. Do not invent products or
 prices to make an entry look complete.
@@ -125,7 +135,8 @@ reverse that order before adding them.
 
 Building coordinates should identify the building itself. A machine's optional
 `position` should fall within or immediately adjacent to its building
-footprint.
+footprint. The KU GIS generator requests WGS84 (`EPSG:4326`) GeoJSON so its
+coordinates use the same order.
 
 ### Verification and sources
 
@@ -137,23 +148,64 @@ Only update `lastUpdated` for data that was actually checked. Describe what you
 verified in the pull request so reviewers can distinguish surveyed data from
 partial or externally sourced information.
 
-### Generating footprints
+The generated district and floor data comes from the public
+[KU Smart Campus ArcGIS service](https://opsmaps.ku.edu:6443/arcgis/rest/services/homePagewmProd/MapServer?f=pjson):
 
-After adding a building or correcting its coordinates, run:
+- Layer 0 supplies the Central, North, and West campus district polygons.
+- Layer 4 supplies floor-specific building polygons.
+
+
+### Generating geographic data
+
+After adding a building or correcting its coordinates, regenerate the
+OpenStreetMap footprints:
 
 ```bash
 bun run fetch-footprints
 ```
 
-This regenerates `src/data/footprints.ts` from OpenStreetMap. Commit the updated
-file with the building change. Treat `footprints.ts` as generated output rather
-than editing its geometry by hand.
+This rewrites `src/data/footprints.ts`. Treat that file as generated output
+rather than editing its geometry by hand. A footprint must correspond to an
+entry in `src/data/buildings.ts`; do not retain standalone footprints for
+buildings that are not part of the application.
+
+After changing a `gisLocationId`, adding a GIS-backed building, or intentionally
+refreshing KU data, run:
+
+```bash
+bun run fetch-ku-gis
+```
+
+This command:
+
+1. Downloads KU district layer 0 to `public/data/ku-districts.geojson`.
+2. Recreates `public/data/ku-floors/` from layer 4 for every building with a
+   `gisLocationId`.
+3. Requests WGS84 GeoJSON and validates that every response is a feature
+   collection.
+4. Retries transient service failures up to three times.
+
+Commit all generated changes with the source-data change. The indoor view loads
+only the selected building's local file, supports polygon holes and
+multipolygons, uses numeric basement and half-floor levels, and ignores
+non-numeric levels such as `ROOF`. If a snapshot is missing or cannot be read,
+the view falls back to the OpenStreetMap footprint.
+
+KU publishes location `228` as the connected `M2SEC/LEEP2/SPAHR` complex. The
+LEEP 2 entry intentionally uses that combined identifier, so
+`public/data/ku-floors/leep2.geojson` includes the connected complex. Spahr is
+not a separate application building unless a machine record and building entry
+are added for it.
 
 ## Contributing code
 
 Bug fixes and features are welcome. Follow the existing TypeScript and React
 style, keep changes focused, and update relevant tests when behavior changes.
 
+The campus map uses MapLibre. Its KU-blue fill and outline are rendered from the
+local district snapshot below map labels. The indoor renderer uses React Three
+Fiber and projects the selected building's local floor snapshot into meters,
+falling back to the generated OpenStreetMap footprint when necessary.
 
 ## Validation
 
@@ -166,8 +218,8 @@ bun run build
 ```
 
 The data-integrity tests check common problems including swapped coordinates,
-duplicate ids, broken building references, invalid floors, duplicate slot
-codes, and invalid prices.
+duplicate ids, broken building references, invalid floors, stale footprints,
+duplicate slot codes, and invalid prices.
 
 Confirm that:
 
@@ -175,11 +227,12 @@ Confirm that:
 - Building and machine ids are unique and URL-safe.
 - Every `buildingId` references an existing building.
 - Machine floors exist in the associated building's `floors` array.
-- Prices are integer cents.
+- Prices are positive integer cents.
 - Slot codes are unique within each machine.
 - `lastUpdated` reflects the actual verification date.
 - Unknown inventory remains `slots: []` instead of being guessed.
-- Generated footprints are committed when applicable.
+- Generated OpenStreetMap and KU GIS files are committed when applicable.
+- Every generated footprint references an application building.
 - No `package-lock.json` or unrelated generated files were added.
 
 ## Submitting a pull request

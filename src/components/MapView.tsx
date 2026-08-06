@@ -8,15 +8,7 @@ import type { Building, Coordinates, UserOrigin } from '../data/types'
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 const CAMPUS_CENTER: Coordinates = [-95.2462, 38.958]
 const KU_DISTRICTS_SOURCE_ID = 'ku-districts'
-const KU_DISTRICTS_GEOJSON =
-  'https://opsmaps.ku.edu:6443/arcgis/rest/services/homePagewmProd/MapServer/0/query?' +
-  new URLSearchParams({
-    where: '1=1',
-    outFields: 'OBJECTID,DISTRICT',
-    returnGeometry: 'true',
-    outSR: '4326',
-    f: 'geojson',
-  })
+const KU_DISTRICTS_GEOJSON = `${import.meta.env.BASE_URL}data/ku-districts.geojson`
 
 function addCampusDistrictLayers(map: MaplibreMap) {
   map.addSource(KU_DISTRICTS_SOURCE_ID, {
@@ -35,7 +27,7 @@ function addCampusDistrictLayers(map: MaplibreMap) {
       source: KU_DISTRICTS_SOURCE_ID,
       paint: {
         'fill-color': '#0051ba',
-        'fill-opacity': 0.05,
+        'fill-opacity': 0.05, // change to make fill darker or lighter
       },
     },
     firstLabelLayer,

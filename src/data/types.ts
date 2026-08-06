@@ -11,6 +11,8 @@ export type Building = {
   name: string
   /** [longitude, latitude] — map marker + camera target */
   coordinates: Coordinates
+  /** KU GIS building-location id used to query official floor polygons when available. */
+  gisLocationId?: string
   /** Actual floor numbers, ascending, e.g. [1, 2, 3]; basements like [0, 1] work too */
   floors: number[]
 }

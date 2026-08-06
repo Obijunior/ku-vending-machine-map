@@ -16,6 +16,7 @@ export default function IndoorView({ building, machines, selectedMachineId }: Pr
   const navigate = useNavigate()
   const selectedFloor = machines.find((m) => m.id === selectedMachineId)?.floor
   const [activeFloor, setActiveFloor] = useState<number | 'all'>(selectedFloor ?? 'all')
+  const [availableFloors, setAvailableFloors] = useState(building.floors)
   const [prevSelectedFloor, setPrevSelectedFloor] = useState(selectedFloor)
   if (selectedFloor !== prevSelectedFloor) {
     setPrevSelectedFloor(selectedFloor)
@@ -31,10 +32,12 @@ export default function IndoorView({ building, machines, selectedMachineId }: Pr
         <ambientLight intensity={0.7} />
         <directionalLight position={[50, 80, 30]} intensity={1.4} />
         <BuildingScene
+          key={building.id}
           building={building}
           machines={machines}
           selectedMachineId={selectedMachineId}
           emphasizedFloor={activeFloor === 'all' ? null : activeFloor}
+          onFloorsLoaded={setAvailableFloors}
           onSelectMachine={(id) => navigate(`/machine/${id}?view=inside`)}
         />
         <OrbitControls enableDamping minDistance={radius * 0.4} maxDistance={radius * 6} target={[0, 4, 0]} />
@@ -47,7 +50,7 @@ export default function IndoorView({ building, machines, selectedMachineId }: Pr
         >
           All
         </button>
-        {building.floors.map((floor) => (
+        {availableFloors.map((floor) => (
           <button
             key={floor}
             type="button"

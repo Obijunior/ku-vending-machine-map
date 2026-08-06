@@ -91,8 +91,22 @@
 .machine-type-icons {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   vertical-align: -6px;
+}
+
+.machine-type-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.machine-type-count {
+  color: #59616b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .machine-type-icon {
