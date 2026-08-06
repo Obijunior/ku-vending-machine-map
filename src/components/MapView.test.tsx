@@ -31,6 +31,9 @@ vi.mock('maplibre-gl', () => {
     addControl() {
       return this
     }
+    on() {
+      return this
+    }
     flyTo() {}
     remove() {}
   }

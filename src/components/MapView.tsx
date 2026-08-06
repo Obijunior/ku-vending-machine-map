@@ -1,23 +1,87 @@
 import { useEffect, useRef } from 'react'
-import { Map as MaplibreMap, Marker, NavigationControl } from 'maplibre-gl'
+import { Map as MaplibreMap, Marker, NavigationControl, type MapMouseEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useNavigate } from 'react-router-dom'
 import { campusBounds } from '../lib/bounds'
-import type { Building } from '../data/types'
+import type { Building, Coordinates, UserOrigin } from '../data/types'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
-const CAMPUS_CENTER: [number, number] = [-95.2462, 38.958]
+const CAMPUS_CENTER: Coordinates = [-95.2462, 38.958]
+const KU_DISTRICTS_SOURCE_ID = 'ku-districts'
+const KU_DISTRICTS_GEOJSON =
+  'https://opsmaps.ku.edu:6443/arcgis/rest/services/homePagewmProd/MapServer/0/query?' +
+  new URLSearchParams({
+    where: '1=1',
+    outFields: 'OBJECTID,DISTRICT',
+    returnGeometry: 'true',
+    outSR: '4326',
+    f: 'geojson',
+  })
+
+function addCampusDistrictLayers(map: MaplibreMap) {
+  map.addSource(KU_DISTRICTS_SOURCE_ID, {
+    type: 'geojson',
+    data: KU_DISTRICTS_GEOJSON,
+    attribution: 'University of Kansas Smart Campus',
+  })
+
+  // Keep campus shading below place and road labels so the basemap stays legible.
+  const firstLabelLayer = map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id
+
+  map.addLayer(
+    {
+      id: 'ku-district-fill',
+      type: 'fill',
+      source: KU_DISTRICTS_SOURCE_ID,
+      paint: {
+        'fill-color': '#0051ba',
+        'fill-opacity': 0.05,
+      },
+    },
+    firstLabelLayer,
+  )
+  map.addLayer(
+    {
+      id: 'ku-district-outline',
+      type: 'line',
+      source: KU_DISTRICTS_SOURCE_ID,
+      paint: {
+        'line-color': '#0051ba',
+        'line-width': 2.5,
+        'line-opacity': 0.8,
+      },
+    },
+    firstLabelLayer,
+  )
+}
 
 type Props = {
   buildings: Building[]
   selectedBuildingId: string | null
+  origin?: UserOrigin | null
+  isPickingOrigin?: boolean
+  onPickOrigin?: (coordinates: Coordinates) => void
 }
 
-export default function MapView({ buildings, selectedBuildingId }: Props) {
+export default function MapView({
+  buildings,
+  selectedBuildingId,
+  origin = null,
+  isPickingOrigin = false,
+  onPickOrigin,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MaplibreMap | null>(null)
   const markersRef = useRef(new Map<string, Marker>())
+  const originMarkerRef = useRef<Marker | null>(null)
+  const isPickingOriginRef = useRef(isPickingOrigin)
+  const onPickOriginRef = useRef(onPickOrigin)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    isPickingOriginRef.current = isPickingOrigin
+    onPickOriginRef.current = onPickOrigin
+  }, [isPickingOrigin, onPickOrigin])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -34,6 +98,7 @@ export default function MapView({ buildings, selectedBuildingId }: Props) {
       minZoom: 13,
     })
     map.addControl(new NavigationControl({ visualizePitch: true }))
+    map.on('load', () => addCampusDistrictLayers(map))
     mapRef.current = map
 
     for (const building of buildings) {
@@ -41,15 +106,26 @@ export default function MapView({ buildings, selectedBuildingId }: Props) {
       el.type = 'button'
       el.className = 'map-marker'
       el.title = building.name
-      el.addEventListener('click', () => navigate(`/building/${building.id}`))
+      el.setAttribute('aria-label', building.name)
+      el.addEventListener('click', (event) => {
+        event.stopPropagation()
+        navigate(`/building/${building.id}`)
+      })
       const marker = new Marker({ element: el }).setLngLat(building.coordinates).addTo(map)
       markersRef.current.set(building.id, marker)
     }
+
+    const handleMapClick = (event: MapMouseEvent) => {
+      if (!isPickingOriginRef.current) return
+      onPickOriginRef.current?.([event.lngLat.lng, event.lngLat.lat])
+    }
+    map.on('click', handleMapClick)
 
     const markers = markersRef.current
     return () => {
       map.remove()
       mapRef.current = null
+      originMarkerRef.current = null
       markers.clear()
     }
     // Buildings come from a static module and never change at runtime,
@@ -67,5 +143,37 @@ export default function MapView({ buildings, selectedBuildingId }: Props) {
     }
   }, [selectedBuildingId, buildings])
 
-  return <div ref={containerRef} className="map-container" data-testid="map" />
+  useEffect(() => {
+    if (!mapRef.current) return
+    if (!origin) {
+      originMarkerRef.current?.remove()
+      originMarkerRef.current = null
+      return
+    }
+
+    if (!originMarkerRef.current) {
+      const el = document.createElement('div')
+      el.className = 'origin-marker'
+      el.setAttribute('role', 'img')
+      el.setAttribute('aria-label', 'Directions starting point')
+      originMarkerRef.current = new Marker({ element: el })
+        .setLngLat(origin.coordinates)
+        .addTo(mapRef.current)
+    } else {
+      originMarkerRef.current.setLngLat(origin.coordinates)
+    }
+
+    originMarkerRef.current
+      .getElement()
+      .classList.toggle('origin-marker--device', origin.source === 'device')
+  }, [origin])
+
+  return (
+    <div
+      ref={containerRef}
+      className={`map-container${isPickingOrigin ? ' map-container--picking' : ''}`}
+      data-testid="map"
+      aria-label="Campus vending machine map"
+    />
+  )
 }

@@ -1,9 +1,11 @@
 import { ListBullets, MapTrifold } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { BrowserRouter, Route, Routes, matchPath, useLocation } from 'react-router-dom'
+import type { Coordinates, UserOrigin } from './data/types'
 import { getMachineById } from './data/queries'
 import BuildingDetail from './components/BuildingDetail'
 import BuildingList from './components/BuildingList'
+import LocationControls from './components/LocationControls'
 import MachineDetail from './components/MachineDetail'
 import MapPane from './components/MapPane'
 import NotFound from './components/NotFound'
@@ -25,9 +27,65 @@ function useSelection(): { buildingId: string | null; machineId: string | null }
   return { buildingId: null, machineId: null }
 }
 
+function geolocationErrorMessage(error: GeolocationPositionError): string {
+  if (error.code === error.PERMISSION_DENIED) {
+    return "Location wasn't shared. Drop a pin on the map instead."
+  }
+  if (error.code === error.TIMEOUT) {
+    return 'Location timed out. Try again or drop a pin instead.'
+  }
+  return 'Your location is unavailable. Drop a pin on the map instead.'
+}
+
 export function AppLayout() {
   const { buildingId, machineId } = useSelection()
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
+  const [origin, setOrigin] = useState<UserOrigin | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [isPickingOrigin, setIsPickingOrigin] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+
+  function useDeviceLocation() {
+    setLocationError(null)
+    setIsPickingOrigin(false)
+
+    if (!navigator.geolocation) {
+      setLocationError('Location is unavailable in this browser. Drop a pin instead.')
+      return
+    }
+
+    setIsLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setOrigin({ coordinates: [coords.longitude, coords.latitude], source: 'device' })
+        setIsLocating(false)
+      },
+      (error) => {
+        setLocationError(geolocationErrorMessage(error))
+        setIsLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    )
+  }
+
+  function startOriginPick() {
+    setLocationError(null)
+    setIsLocating(false)
+    setIsPickingOrigin(true)
+    setMobileView('map')
+  }
+
+  function pickOrigin(coordinates: Coordinates) {
+    setOrigin({ coordinates, source: 'pin' })
+    setIsPickingOrigin(false)
+    setLocationError(null)
+  }
+
+  function clearOrigin() {
+    setOrigin(null)
+    setIsPickingOrigin(false)
+    setLocationError(null)
+  }
 
   return (
     <div className="app">
@@ -36,10 +94,19 @@ export function AppLayout() {
           <h1>KU Vending (WIP)</h1>
           <p>Vending machines across the Lawrence campus</p>
         </header>
+        <LocationControls
+          origin={origin}
+          isLocating={isLocating}
+          isPickingOrigin={isPickingOrigin}
+          error={locationError}
+          onUseLocation={useDeviceLocation}
+          onStartPin={startOriginPick}
+          onClear={clearOrigin}
+        />
         <Routes>
-          <Route path="/" element={<BuildingList />} />
-          <Route path="/building/:id" element={<BuildingDetail />} />
-          <Route path="/machine/:id" element={<MachineDetail />} />
+          <Route path="/" element={<BuildingList origin={origin} />} />
+          <Route path="/building/:id" element={<BuildingDetail origin={origin} />} />
+          <Route path="/machine/:id" element={<MachineDetail origin={origin} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <footer className="sidebar-footer">
@@ -53,7 +120,14 @@ export function AppLayout() {
         </footer>
       </aside>
       <div className={`map-pane ${mobileView === 'list' ? 'mobile-hidden' : ''}`}>
-        <MapPane selectedBuildingId={buildingId} selectedMachineId={machineId} />
+        <MapPane
+          selectedBuildingId={buildingId}
+          selectedMachineId={machineId}
+          origin={origin}
+          isPickingOrigin={isPickingOrigin}
+          onPickOrigin={pickOrigin}
+          onCancelOriginPick={() => setIsPickingOrigin(false)}
+        />
       </div>
       <button
         type="button"
