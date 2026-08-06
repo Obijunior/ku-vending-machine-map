@@ -178,9 +178,22 @@ export default function BuildingList({ origin = null }: Props) {
                         {buildingMachines.length} machine
                         {buildingMachines.length === 1 ? '' : 's'}{' '}
                         <span className="machine-type-icons">
-                          {buildingMachines.map((machine) => (
-                            <MachineTypeIcon key={machine.id} type={machine.type} />
-                          ))}
+                          {(['drink', 'snack', 'combo'] as const).map((type) => {
+                            const count = buildingMachines.filter(
+                              (machine) => machine.type === type,
+                            ).length
+                            if (count === 0) return null
+                            return (
+                              <span className="machine-type-group" key={type}>
+                                <MachineTypeIcon type={type} />
+                                {count > 1 && (
+                                  <span className="machine-type-count" aria-label={`${count} total`}>
+                                    ×{count}
+                                  </span>
+                                )}
+                              </span>
+                            )
+                          })}
                         </span>
                         {origin && ` · ${formatDistance(distanceMeters(origin.coordinates, building.coordinates))}`}
                       </span>
