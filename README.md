@@ -1,5 +1,7 @@
 # KU Vending Machine Map
 
+WARNING: still in alpha, I haven't had the chance to manually catalog any of the machines yet
+
 A map of vending machines on the University of Kansas Lawrence campus: a tilted
 3D campus map, per-building machine lists, slot-level inventory, and item
 search.
