@@ -52,14 +52,25 @@ describe('getMachinesForBuilding', () => {
 describe('getRouteToBuilding', () => {
   const nearQuad: Coordinates = [-95.24801, 38.95701]
 
-  it('routes from the nearest node to the building entrance', () => {
+  it('routes from the origin, through the nearest node, to the building entrance', () => {
     const route = getRouteToBuilding(nearQuad, 'wescoe')
+    expect(route).not.toBeNull()
+    expect(route!.path).toEqual([
+      nearQuad,
+      [-95.248, 38.957],
+      [-95.2478, 38.9573],
+    ])
+    expect(route!.distanceMeters).toBeGreaterThan(0)
+  })
+
+  it('does not duplicate the vertex when the origin sits exactly on a node', () => {
+    const onNode: Coordinates = [-95.248, 38.957]
+    const route = getRouteToBuilding(onNode, 'wescoe')
     expect(route).not.toBeNull()
     expect(route!.path).toEqual([
       [-95.248, 38.957],
       [-95.2478, 38.9573],
     ])
-    expect(route!.distanceMeters).toBeGreaterThan(0)
   })
 
   it('returns null for a building with no entrance on the graph', () => {
