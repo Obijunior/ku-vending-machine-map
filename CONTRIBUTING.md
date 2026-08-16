@@ -37,6 +37,7 @@ Application data is maintained in:
 
 - `src/data/buildings.ts` for buildings, coordinates, and KU GIS identifiers
 - `src/data/machines.ts` for machines, locations, and inventory
+- `src/data/campusGraph.ts` for the hand-authored walking-path network
 - `src/data/footprints.ts` for generated OpenStreetMap building footprints
 - `public/data/ku-districts.geojson` for the generated campus district polygons
 - `public/data/ku-floors/*.geojson` for generated, per-building floor polygons
@@ -126,6 +127,29 @@ Inventory fields follow these rules:
 
 Use `slots: []` when inventory has not been surveyed. Do not invent products or
 prices to make an entry look complete.
+
+### Adding walking paths
+
+Walking routes come from a hand-authored graph in `src/data/campusGraph.ts`:
+nodes are points on the path network, edges connect them, and
+`buildingEntrances` maps a building id to the node at its door.
+
+To extend it:
+
+1. Open [geojson.io](https://geojson.io), switch to satellite imagery, and drop
+   a Point at each path junction and building entrance you want to add.
+2. Copy the coordinates (already `[longitude, latitude]`) into `nodes` with a
+   stable, descriptive `n-`-prefixed id.
+3. Connect them in `edges`. Edges are undirected — list each pair once.
+4. Map any new building entrances in `buildingEntrances`.
+
+Never add a distance or weight by hand: edge lengths are computed from node
+coordinates at load time so they cannot drift from the geometry.
+
+The graph is allowed to be incomplete. Buildings that aren't in
+`buildingEntrances`, and origins with no connected path, fall back to
+straight-line distance and the Google Maps link — so you can digitize one
+cluster of campus at a time.
 
 ### Coordinates
 
