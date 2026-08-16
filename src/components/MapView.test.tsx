@@ -3,16 +3,18 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MapView from './MapView'
 import { buildings } from '../data/buildings'
-import type { Coordinates } from '../data/types'
+import type { Building, Coordinates } from '../data/types'
 
 type MapOptions = { minZoom?: number; maxBounds?: [[number, number], [number, number]] }
 type SourceSpec = { type: string; data: unknown }
+type FlyToCall = { center: Coordinates; zoom: number; pitch: number }
 
-const { mapOptions, sources, layers, sourceData } = vi.hoisted(() => ({
+const { mapOptions, sources, layers, sourceData, flyToCalls } = vi.hoisted(() => ({
   mapOptions: [] as MapOptions[],
   sources: new Map<string, SourceSpec>(),
   layers: [] as { id: string; type: string }[],
   sourceData: new Map<string, unknown>(),
+  flyToCalls: [] as FlyToCall[],
 }))
 
 vi.mock('maplibre-gl', () => {
@@ -58,7 +60,9 @@ vi.mock('maplibre-gl', () => {
       if (!sources.has(id)) return undefined
       return { setData: (data: unknown) => sourceData.set(id, data) }
     }
-    flyTo() {}
+    flyTo(options: FlyToCall) {
+      flyToCalls.push(options)
+    }
     remove() {}
   }
   class NavigationControl {}
@@ -84,6 +88,7 @@ describe('MapView', () => {
     layers.length = 0
     sources.clear()
     sourceData.clear()
+    flyToCalls.length = 0
   })
 
   it('pens the camera in around campus', () => {
@@ -138,6 +143,33 @@ describe('MapView', () => {
           geometry: { type: 'LineString', coordinates: ROUTE },
         },
       ],
+    })
+  })
+
+  it('flies to a focusBuilding even when it is not in the buildings marker array', () => {
+    // A machineless building — e.g. a route destination — is filtered out of
+    // the marker array MapPane passes as `buildings`, but should still be a
+    // valid camera target via `focusBuilding`.
+    const offMarkerBuilding: Building = {
+      id: 'green',
+      name: 'Green Hall',
+      coordinates: [-95.256, 38.958],
+      floors: [1, 2, 3],
+    }
+    render(
+      <MemoryRouter>
+        <MapView
+          buildings={buildings}
+          selectedBuildingId="green"
+          route={null}
+          focusBuilding={offMarkerBuilding}
+        />
+      </MemoryRouter>,
+    )
+    expect(flyToCalls).toContainEqual({
+      center: offMarkerBuilding.coordinates,
+      zoom: 17.5,
+      pitch: 55,
     })
   })
 })

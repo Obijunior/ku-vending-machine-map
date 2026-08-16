@@ -95,6 +95,13 @@ type Props = {
   onPickOrigin?: (coordinates: Coordinates) => void
   /** Node-to-node walking path to highlight, or null for none. */
   route?: Coordinates[] | null
+  /**
+   * Building to fly the camera to, overriding the lookup in `buildings`.
+   * Needed because `buildings` here is filtered to ones with markers, but a
+   * selected building (a route destination, say) may not have machines and
+   * so wouldn't be found by that lookup alone.
+   */
+  focusBuilding?: Building | null
 }
 
 export default function MapView({
@@ -104,6 +111,7 @@ export default function MapView({
   isPickingOrigin = false,
   onPickOrigin,
   route = null,
+  focusBuilding = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MaplibreMap | null>(null)
@@ -182,11 +190,11 @@ export default function MapView({
     for (const [id, marker] of markersRef.current) {
       marker.getElement().classList.toggle('map-marker--selected', id === selectedBuildingId)
     }
-    const selected = buildings.find((b) => b.id === selectedBuildingId)
+    const selected = focusBuilding ?? buildings.find((b) => b.id === selectedBuildingId)
     if (selected && mapRef.current) {
       mapRef.current.flyTo({ center: selected.coordinates, zoom: 17.5, pitch: 55 })
     }
-  }, [selectedBuildingId, buildings])
+  }, [selectedBuildingId, buildings, focusBuilding])
 
   useEffect(() => {
     if (!mapRef.current) return

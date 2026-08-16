@@ -123,6 +123,7 @@ export default function MapPane({
             isPickingOrigin={isPickingOrigin}
             onPickOrigin={onPickOrigin}
             route={route}
+            focusBuilding={building}
           />
         </Suspense>
       )}
