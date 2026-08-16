@@ -3,9 +3,22 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AppLayout } from '../App'
+import MapPane from './MapPane'
+import type { UserOrigin } from '../data/types'
 
 vi.mock('./MapView', () => ({
-  default: () => <div data-testid="map-stub" />,
+  default: ({ route }: { route: [number, number][] | null }) => (
+    <div data-testid="map-stub" data-route-points={route ? route.length : 0} />
+  ),
+}))
+
+vi.mock('../data/campusGraph', () => ({
+  nodes: [
+    { id: 'n-quad', coordinates: [-95.248, 38.957] },
+    { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
+  ],
+  edges: [{ from: 'n-quad', to: 'n-wescoe-door' }],
+  buildingEntrances: { wescoe: 'n-wescoe-door' },
 }))
 
 vi.mock('../indoor/IndoorView', () => ({
@@ -18,6 +31,27 @@ function renderAt(path: string) {
   render(
     <MemoryRouter initialEntries={[path]}>
       <AppLayout />
+    </MemoryRouter>,
+  )
+}
+
+const pinnedAtQuad: UserOrigin = {
+  coordinates: [-95.248, 38.957],
+  source: 'pin',
+}
+
+// MapView is lazy-loaded inside MapPane, so every assertion here is async.
+function renderPane(origin: UserOrigin | null, selectedBuildingId: string | null) {
+  render(
+    <MemoryRouter initialEntries={['/building/wescoe']}>
+      <MapPane
+        selectedBuildingId={selectedBuildingId}
+        selectedMachineId={null}
+        origin={origin}
+        isPickingOrigin={false}
+        onPickOrigin={() => {}}
+        onCancelOriginPick={() => {}}
+      />
     </MemoryRouter>,
   )
 }
@@ -68,5 +102,25 @@ describe('MapPane', () => {
   it('ignores ?view=inside at the root', async () => {
     renderAt('/?view=inside')
     expect(await screen.findByTestId('map-stub')).toBeInTheDocument()
+  })
+
+  it('draws no route when no starting point is set', async () => {
+    renderPane(null, 'wescoe')
+    expect(await screen.findByTestId('map-stub')).toHaveAttribute('data-route-points', '0')
+  })
+
+  it('draws a route to a building that is on the path graph', async () => {
+    renderPane(pinnedAtQuad, 'wescoe')
+    expect(await screen.findByTestId('map-stub')).toHaveAttribute('data-route-points', '2')
+  })
+
+  it('draws no route for a building that is not on the path graph', async () => {
+    renderPane(pinnedAtQuad, 'budig')
+    expect(await screen.findByTestId('map-stub')).toHaveAttribute('data-route-points', '0')
+  })
+
+  it('draws no route when no building is selected', async () => {
+    renderPane(pinnedAtQuad, null)
+    expect(await screen.findByTestId('map-stub')).toHaveAttribute('data-route-points', '0')
   })
 })

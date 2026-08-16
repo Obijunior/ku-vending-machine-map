@@ -1,8 +1,8 @@
 import { Buildings, MapTrifold } from '@phosphor-icons/react'
-import { Component, Suspense, lazy, useEffect, type ReactNode } from 'react'
+import { Component, Suspense, lazy, useEffect, useMemo, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { buildings } from '../data/buildings'
-import { getBuildingById, getMachinesForBuilding } from '../data/queries'
+import { getBuildingById, getMachinesForBuilding, getRouteToBuilding } from '../data/queries'
 import type { Coordinates, UserOrigin } from '../data/types'
 
 // Both renderers are heavy (MapLibre ~800KB, three.js ~900KB) and neither is
@@ -52,6 +52,12 @@ export default function MapPane({
   const [searchParams, setSearchParams] = useSearchParams()
   const building = selectedBuildingId ? getBuildingById(selectedBuildingId) : undefined
   const inside = building !== undefined && searchParams.get('view') === 'inside'
+
+  // Only the campus view draws routes; the indoor scene has its own geometry.
+  const route = useMemo(() => {
+    if (!origin || !building || isPickingOrigin) return null
+    return getRouteToBuilding(origin.coordinates, building.id)?.path ?? null
+  }, [origin, building, isPickingOrigin])
 
   useEffect(() => {
     if (!isPickingOrigin || searchParams.get('view') !== 'inside') return
@@ -116,6 +122,7 @@ export default function MapPane({
             origin={origin}
             isPickingOrigin={isPickingOrigin}
             onPickOrigin={onPickOrigin}
+            route={route}
           />
         </Suspense>
       )}
