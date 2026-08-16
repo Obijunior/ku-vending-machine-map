@@ -9,9 +9,7 @@ export const machines: VendingMachine[] = [
     floor: 2,
     locationNote: '',
     lastUpdated: '2026-06-11',
-    slots: [
-      { code: '0', item: 'None', priceCents: 0 },
-    ],
+    slots: [],
   },
   {
     id: 'wescoe-2-drink',
@@ -20,9 +18,7 @@ export const machines: VendingMachine[] = [
     floor: 2,
     locationNote: '',
     lastUpdated: '2026-06-11',
-    slots: [
-      { code: '0', item: 'None', priceCents: 0 },
-    ],
+    slots: [],
   },
   {
     id: 'budig-1-combo',
@@ -31,9 +27,7 @@ export const machines: VendingMachine[] = [
     floor: 1,
     locationNote: '',
     lastUpdated: '2026-06-11',
-    slots: [
-      { code: '0', item: 'None', priceCents: 0 },
-    ],
+    slots: [],
   },
   {
     id: 'anschutz-1-drink',
@@ -42,9 +36,7 @@ export const machines: VendingMachine[] = [
     floor: 1,
     locationNote: 'Entry level, near the study commons',
     lastUpdated: '2026-06-11',
-    slots: [
-      { code: '0', item: 'None', priceCents: 0 },
-    ],
+    slots: [],
   },
   {
     id: 'anschutz-3-snack',
@@ -62,9 +54,7 @@ export const machines: VendingMachine[] = [
     floor: 1,
     locationNote: '',
     lastUpdated: '2026-06-11',
-    slots: [
-      { code: '0', item: 'None', priceCents: 0 },
-    ],
+    slots: [],
   },
   {
     id: 'leep2-1-snack',
