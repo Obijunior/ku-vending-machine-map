@@ -12,6 +12,29 @@ vi.mock('./components/MapView', () => ({
   ),
 }))
 
+vi.mock('./data/machines', () => ({
+  machines: [
+    {
+      id: 'wescoe-2-snack',
+      buildingId: 'wescoe',
+      type: 'snack',
+      floor: 2,
+      locationNote: '',
+      lastUpdated: '2026-06-11',
+      slots: [],
+    },
+    {
+      id: 'wescoe-2-drink',
+      buildingId: 'wescoe',
+      type: 'drink',
+      floor: 2,
+      locationNote: '',
+      lastUpdated: '2026-06-11',
+      slots: [{ code: '3', item: 'Mountain Dew', priceCents: 200 }],
+    },
+  ],
+}))
+
 function renderAt(path: string) {
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -33,13 +56,13 @@ describe('AppLayout', () => {
     renderAt('/')
     await user.click(screen.getByRole('link', { name: /Wescoe Hall/ }))
     expect(screen.getByRole('heading', { name: 'Wescoe Hall' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Pepsi drink machine/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Drink machine/ })).toBeInTheDocument()
   })
 
   it('navigates from building detail to machine detail', async () => {
     const user = userEvent.setup()
     renderAt('/building/wescoe')
-    await user.click(screen.getByRole('link', { name: /Pepsi drink machine/ }))
+    await user.click(screen.getByRole('link', { name: /Drink machine/ }))
     expect(screen.getByText('Mountain Dew')).toBeInTheDocument()
   })
 

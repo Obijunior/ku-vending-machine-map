@@ -1,7 +1,30 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import BuildingDetail from './BuildingDetail'
+
+vi.mock('../data/machines', () => ({
+  machines: [
+    {
+      id: 'wescoe-2-snack',
+      buildingId: 'wescoe',
+      type: 'snack',
+      floor: 2,
+      locationNote: 'Main hallway, by the elevators',
+      lastUpdated: '2026-06-11',
+      slots: [],
+    },
+    {
+      id: 'wescoe-2-drink',
+      buildingId: 'wescoe',
+      type: 'drink',
+      floor: 2,
+      locationNote: 'Main hallway, by the elevators',
+      lastUpdated: '2026-06-11',
+      slots: [],
+    },
+  ],
+}))
 
 function renderAt(path: string) {
   render(
@@ -21,7 +44,7 @@ describe('BuildingDetail', () => {
       'href',
       '/machine/wescoe-2-snack',
     )
-    expect(screen.getByRole('link', { name: /Pepsi drink machine/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Drink machine/ })).toHaveAttribute(
       'href',
       '/machine/wescoe-2-drink',
     )

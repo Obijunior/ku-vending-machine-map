@@ -1,7 +1,35 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import MachineDetail from './MachineDetail'
+
+// Buildings stay real (wescoe / anschutz exist); only the survey-dependent
+// machine inventory is fixture data so real surveys can't break this suite.
+vi.mock('../data/machines', () => ({
+  machines: [
+    {
+      id: 'wescoe-2-snack',
+      buildingId: 'wescoe',
+      type: 'snack',
+      floor: 2,
+      locationNote: 'Main hallway, by the elevators',
+      lastUpdated: '2026-06-11',
+      slots: [
+        { code: 'B2', item: 'Hot Cheetos', priceCents: 175 },
+        { code: 'A1', item: 'Snickers', priceCents: 150 },
+      ],
+    },
+    {
+      id: 'anschutz-3-snack',
+      buildingId: 'anschutz',
+      type: 'snack',
+      floor: 3,
+      locationNote: '',
+      lastUpdated: '2026-07-22',
+      slots: [],
+    },
+  ],
+}))
 
 function renderAt(path: string) {
   render(

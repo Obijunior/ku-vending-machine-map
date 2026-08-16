@@ -1,8 +1,42 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import BuildingList from './BuildingList'
+
+// Counts matter here: Wescoe must have 2 machines and Budig 1 for the
+// machine-count assertions below.
+vi.mock('../data/machines', () => ({
+  machines: [
+    {
+      id: 'wescoe-2-snack',
+      buildingId: 'wescoe',
+      type: 'snack',
+      floor: 2,
+      locationNote: '',
+      lastUpdated: '2026-06-11',
+      slots: [{ code: 'B2', item: 'Hot Cheetos', priceCents: 175 }],
+    },
+    {
+      id: 'wescoe-2-drink',
+      buildingId: 'wescoe',
+      type: 'drink',
+      floor: 2,
+      locationNote: '',
+      lastUpdated: '2026-06-11',
+      slots: [],
+    },
+    {
+      id: 'budig-1-combo',
+      buildingId: 'budig',
+      type: 'combo',
+      floor: 1,
+      locationNote: '',
+      lastUpdated: '2026-06-11',
+      slots: [],
+    },
+  ],
+}))
 
 function renderList() {
   render(
