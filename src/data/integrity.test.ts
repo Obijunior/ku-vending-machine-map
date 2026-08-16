@@ -4,6 +4,7 @@ import { buildingEntrances, edges, nodes } from './campusGraph'
 import { footprints } from './footprints'
 import { machines } from './machines'
 import { findRoute } from '../lib/routing'
+import { distanceMeters } from '../lib/location'
 
 // Bounding box for the Lawrence area — catches lat/lng swaps and stray pastes.
 const LNG_MIN = -95.35
@@ -232,6 +233,40 @@ describe('campus graph', () => {
       expect(
         nodeIds.has(nodeId),
         `entrance for ${buildingId} references missing node: ${nodeId}`,
+      ).toBe(true)
+    }
+  })
+
+  // A campus path graph is small: a mistyped coordinate digit (e.g.
+  // -95.2478 -> -95.2578) moves a node ~870m and would otherwise pass every
+  // check above while silently adding a huge detour to every route through
+  // it. These two checks are vacuous on the empty graph and become
+  // protective the moment real nodes are hand-typed in.
+
+  it('has edges shorter than 400m (catches a coordinate typo, not a style rule)', () => {
+    const nodeById = new Map(nodes.map((n) => [n.id, n]))
+    for (const edge of edges) {
+      const from = nodeById.get(edge.from)
+      const to = nodeById.get(edge.to)
+      if (!from || !to) continue // missing-node case is covered above
+      const length = distanceMeters(from.coordinates, to.coordinates)
+      expect(
+        length < 400,
+        `edge ${edge.from} <-> ${edge.to} is ${Math.round(length)}m long — a real campus path segment can run a couple hundred metres, but this is long enough to smell like a coordinate typo`,
+      ).toBe(true)
+    }
+  })
+
+  it('has every node within 500m of at least one building', () => {
+    for (const node of nodes) {
+      let nearest = Infinity
+      for (const building of buildings) {
+        const distance = distanceMeters(node.coordinates, building.coordinates)
+        if (distance < nearest) nearest = distance
+      }
+      expect(
+        nearest <= 500,
+        `node ${node.id} is ${Math.round(nearest)}m from the nearest building — path nodes exist to connect buildings, so this is likely a coordinate typo`,
       ).toBe(true)
     }
   })
