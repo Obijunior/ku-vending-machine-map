@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { getBuildingById, getMachinesForBuilding } from '../data/queries'
+import { getBuildingById, getMachinesForBuilding, getRouteToBuilding } from '../data/queries'
 import type { UserOrigin } from '../data/types'
 import { machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
@@ -15,8 +15,13 @@ export default function BuildingDetail({ origin = null }: Props) {
   if (!building) return <NotFound />
 
   const buildingMachines = getMachinesForBuilding(building.id)
+  // Prefer the real walked distance; fall back to straight-line when this
+  // building isn't on the path graph yet.
+  const route = origin ? getRouteToBuilding(origin.coordinates, building.id) : null
   const distance = origin
-    ? formatDistance(distanceMeters(origin.coordinates, building.coordinates))
+    ? formatDistance(
+        route?.distanceMeters ?? distanceMeters(origin.coordinates, building.coordinates),
+      )
     : null
 
   return (

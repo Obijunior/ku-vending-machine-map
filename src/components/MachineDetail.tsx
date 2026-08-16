@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { getBuildingById, getMachineById } from '../data/queries'
+import { getBuildingById, getMachineById, getRouteToBuilding } from '../data/queries'
 import type { UserOrigin } from '../data/types'
 import { formatPrice, machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
@@ -16,8 +16,13 @@ export default function MachineDetail({ origin = null }: Props) {
   if (!machine || !building) return <NotFound />
 
   const destination = machine.position ?? building.coordinates
+  // The graph is an outdoor network, so it routes to the building's entrance;
+  // the machine's own position only matters for the straight-line fallback.
+  const route = origin ? getRouteToBuilding(origin.coordinates, building.id) : null
   const distance = origin
-    ? formatDistance(distanceMeters(origin.coordinates, destination))
+    ? formatDistance(
+        route?.distanceMeters ?? distanceMeters(origin.coordinates, destination),
+      )
     : null
 
   return (
