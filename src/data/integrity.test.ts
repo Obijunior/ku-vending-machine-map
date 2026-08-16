@@ -3,6 +3,7 @@ import { buildings } from './buildings'
 import { buildingEntrances, edges, nodes } from './campusGraph'
 import { footprints } from './footprints'
 import { machines } from './machines'
+import { findRoute } from '../lib/routing'
 
 // Bounding box for the Lawrence area — catches lat/lng swaps and stray pastes.
 const LNG_MIN = -95.35
@@ -238,4 +239,22 @@ describe('campus graph', () => {
   // Deliberately NOT tested: full connectivity. Digitizing happens cluster by
   // cluster, so disconnected islands are an expected intermediate state —
   // routing between them returns null and the UI falls back to a straight line.
+
+  // Both ends must be digitized before this can mean anything. Using skipIf
+  // (rather than an early return) keeps an undigitized graph VISIBLE as a skip
+  // in the test output instead of a passing test that asserted nothing.
+  const wescoeEntrance = buildingEntrances['wescoe']
+  const budigEntrance = buildingEntrances['budig']
+
+  it.skipIf(!wescoeEntrance || !budigEntrance)(
+    'routes between two buildings that should be connected',
+    () => {
+      const route = findRoute({ nodes, edges }, wescoeEntrance, budigEntrance)
+      expect(route, 'wescoe and budig are both mapped but no path connects them').not.toBeNull()
+      // Sanity band: far enough apart to be a real walk, close enough that a
+      // wildly wrong path (e.g. routing through another district) fails here.
+      expect(route!.distanceMeters).toBeGreaterThan(50)
+      expect(route!.distanceMeters).toBeLessThan(1000)
+    },
+  )
 })
