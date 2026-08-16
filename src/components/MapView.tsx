@@ -1,7 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { Map as MaplibreMap, Marker, NavigationControl, type MapMouseEvent } from 'maplibre-gl'
+import {
+  Map as MaplibreMap,
+  Marker,
+  NavigationControl,
+  type GeoJSONSource,
+  type MapMouseEvent,
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useNavigate } from 'react-router-dom'
+import type { FeatureCollection } from 'geojson'
 import { campusBounds } from '../lib/bounds'
 import type { Building, Coordinates, UserOrigin } from '../data/types'
 
@@ -9,6 +16,39 @@ const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 const CAMPUS_CENTER: Coordinates = [-95.2462, 38.958]
 const KU_DISTRICTS_SOURCE_ID = 'ku-districts'
 const KU_DISTRICTS_GEOJSON = `${import.meta.env.BASE_URL}data/ku-districts.geojson`
+const ROUTE_SOURCE_ID = 'walking-route'
+const ROUTE_LAYER_ID = 'walking-route-line'
+
+const EMPTY_ROUTE: FeatureCollection = { type: 'FeatureCollection', features: [] }
+
+function routeToGeoJson(route: Coordinates[] | null): FeatureCollection {
+  if (!route || route.length < 2) return EMPTY_ROUTE
+  return {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: route },
+      },
+    ],
+  }
+}
+
+function addRouteLayer(map: MaplibreMap) {
+  map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: EMPTY_ROUTE })
+  map.addLayer({
+    id: ROUTE_LAYER_ID,
+    type: 'line',
+    source: ROUTE_SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': '#e8000d',
+      'line-width': 5,
+      'line-opacity': 0.9,
+    },
+  })
+}
 
 function addCampusDistrictLayers(map: MaplibreMap) {
   map.addSource(KU_DISTRICTS_SOURCE_ID, {
@@ -53,6 +93,8 @@ type Props = {
   origin?: UserOrigin | null
   isPickingOrigin?: boolean
   onPickOrigin?: (coordinates: Coordinates) => void
+  /** Node-to-node walking path to highlight, or null for none. */
+  route?: Coordinates[] | null
 }
 
 export default function MapView({
@@ -61,6 +103,7 @@ export default function MapView({
   origin = null,
   isPickingOrigin = false,
   onPickOrigin,
+  route = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MaplibreMap | null>(null)
@@ -68,6 +111,8 @@ export default function MapView({
   const originMarkerRef = useRef<Marker | null>(null)
   const isPickingOriginRef = useRef(isPickingOrigin)
   const onPickOriginRef = useRef(onPickOrigin)
+  const styleLoadedRef = useRef(false)
+  const routeRef = useRef(route)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -90,7 +135,14 @@ export default function MapView({
       minZoom: 13,
     })
     map.addControl(new NavigationControl({ visualizePitch: true }))
-    map.on('load', () => addCampusDistrictLayers(map))
+    map.on('load', () => {
+      addCampusDistrictLayers(map)
+      addRouteLayer(map)
+      styleLoadedRef.current = true
+      // The route prop may have changed while the style was still loading.
+      const source = map.getSource<GeoJSONSource>(ROUTE_SOURCE_ID)
+      if (source) source.setData(routeToGeoJson(routeRef.current))
+    })
     mapRef.current = map
 
     for (const building of buildings) {
@@ -117,6 +169,7 @@ export default function MapView({
     return () => {
       map.remove()
       mapRef.current = null
+      styleLoadedRef.current = false
       originMarkerRef.current = null
       markers.clear()
     }
@@ -159,6 +212,13 @@ export default function MapView({
       .getElement()
       .classList.toggle('origin-marker--device', origin.source === 'device')
   }, [origin])
+
+  useEffect(() => {
+    routeRef.current = route
+    if (!mapRef.current || !styleLoadedRef.current) return
+    const source = mapRef.current.getSource<GeoJSONSource>(ROUTE_SOURCE_ID)
+    if (source) source.setData(routeToGeoJson(route))
+  }, [route])
 
   return (
     <div

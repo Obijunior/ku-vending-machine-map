@@ -3,9 +3,17 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MapView from './MapView'
 import { buildings } from '../data/buildings'
+import type { Coordinates } from '../data/types'
 
 type MapOptions = { minZoom?: number; maxBounds?: [[number, number], [number, number]] }
-const { mapOptions } = vi.hoisted(() => ({ mapOptions: [] as MapOptions[] }))
+type SourceSpec = { type: string; data: unknown }
+
+const { mapOptions, sources, layers, sourceData } = vi.hoisted(() => ({
+  mapOptions: [] as MapOptions[],
+  sources: new Map<string, SourceSpec>(),
+  layers: [] as { id: string; type: string }[],
+  sourceData: new Map<string, unknown>(),
+}))
 
 vi.mock('maplibre-gl', () => {
   class Marker {
@@ -31,8 +39,24 @@ vi.mock('maplibre-gl', () => {
     addControl() {
       return this
     }
-    on() {
+    // Fire 'load' synchronously so layer-setup code actually runs in tests.
+    on(event: string, handler: () => void) {
+      if (event === 'load') handler()
       return this
+    }
+    getStyle() {
+      return { layers: [{ id: 'place-label', type: 'symbol' }] }
+    }
+    addSource(id: string, source: SourceSpec) {
+      sources.set(id, source)
+      sourceData.set(id, source.data)
+    }
+    addLayer(layer: { id: string; type: string }) {
+      layers.push(layer)
+    }
+    getSource(id: string) {
+      if (!sources.has(id)) return undefined
+      return { setData: (data: unknown) => sourceData.set(id, data) }
     }
     flyTo() {}
     remove() {}
@@ -41,17 +65,29 @@ vi.mock('maplibre-gl', () => {
   return { Map, Marker, NavigationControl }
 })
 
+const ROUTE: Coordinates[] = [
+  [-95.248, 38.957],
+  [-95.2478, 38.9573],
+]
+
+function renderMap(route: Coordinates[] | null = null) {
+  render(
+    <MemoryRouter>
+      <MapView buildings={buildings} selectedBuildingId={null} route={route} />
+    </MemoryRouter>,
+  )
+}
+
 describe('MapView', () => {
   beforeEach(() => {
     mapOptions.length = 0
+    layers.length = 0
+    sources.clear()
+    sourceData.clear()
   })
 
   it('pens the camera in around campus', () => {
-    render(
-      <MemoryRouter>
-        <MapView buildings={buildings} selectedBuildingId={null} />
-      </MemoryRouter>,
-    )
+    renderMap()
     const [[west, south], [east, north]] = mapOptions[0].maxBounds!
     for (const [lng, lat] of buildings.map((b) => b.coordinates)) {
       expect(lng > west && lng < east && lat > south && lat < north).toBe(true)
@@ -59,29 +95,49 @@ describe('MapView', () => {
   })
 
   it('never zooms out past neighborhood scale', () => {
-    render(
-      <MemoryRouter>
-        <MapView buildings={buildings} selectedBuildingId={null} />
-      </MemoryRouter>,
-    )
+    renderMap()
     expect(mapOptions[0].minZoom).toBe(13)
   })
 
   it('renders the map container without crashing', () => {
-    render(
-      <MemoryRouter>
-        <MapView buildings={buildings} selectedBuildingId={null} />
-      </MemoryRouter>,
-    )
+    renderMap()
     expect(screen.getByTestId('map')).toBeInTheDocument()
   })
 
   it('renders with a selected building without crashing', () => {
     render(
       <MemoryRouter>
-        <MapView buildings={buildings} selectedBuildingId="wescoe" />
+        <MapView buildings={buildings} selectedBuildingId="wescoe" route={null} />
       </MemoryRouter>,
     )
     expect(screen.getByTestId('map')).toBeInTheDocument()
+  })
+
+  it('registers the route source and line layer', () => {
+    renderMap()
+    expect(sources.has('walking-route')).toBe(true)
+    expect(layers.some((layer) => layer.id === 'walking-route-line')).toBe(true)
+  })
+
+  it('leaves the route source empty when there is no route', () => {
+    renderMap()
+    expect(sourceData.get('walking-route')).toEqual({
+      type: 'FeatureCollection',
+      features: [],
+    })
+  })
+
+  it('feeds the route coordinates into the route source', () => {
+    renderMap(ROUTE)
+    expect(sourceData.get('walking-route')).toEqual({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: ROUTE },
+        },
+      ],
+    })
   })
 })
