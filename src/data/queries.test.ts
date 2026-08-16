@@ -1,5 +1,22 @@
-import { describe, expect, it } from 'vitest'
-import { getBuildingById, getMachineById, getMachinesForBuilding } from './queries'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  getBuildingById,
+  getMachineById,
+  getMachinesForBuilding,
+  getRouteToBuilding,
+} from './queries'
+import type { Coordinates } from './types'
+
+// A two-node stand-in for the real campus graph, so these tests don't depend on
+// how much of campus has actually been digitized yet.
+vi.mock('./campusGraph', () => ({
+  nodes: [
+    { id: 'n-quad', coordinates: [-95.2480, 38.9570] },
+    { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
+  ],
+  edges: [{ from: 'n-quad', to: 'n-wescoe-door' }],
+  buildingEntrances: { wescoe: 'n-wescoe-door' },
+}))
 
 describe('getBuildingById', () => {
   it('returns the building for a known id', () => {
@@ -29,5 +46,27 @@ describe('getMachinesForBuilding', () => {
 
   it('returns an empty array for an unknown building', () => {
     expect(getMachinesForBuilding('nope')).toEqual([])
+  })
+})
+
+describe('getRouteToBuilding', () => {
+  const nearQuad: Coordinates = [-95.24801, 38.95701]
+
+  it('routes from the nearest node to the building entrance', () => {
+    const route = getRouteToBuilding(nearQuad, 'wescoe')
+    expect(route).not.toBeNull()
+    expect(route!.path).toEqual([
+      [-95.248, 38.957],
+      [-95.2478, 38.9573],
+    ])
+    expect(route!.distanceMeters).toBeGreaterThan(0)
+  })
+
+  it('returns null for a building with no entrance on the graph', () => {
+    expect(getRouteToBuilding(nearQuad, 'budig')).toBeNull()
+  })
+
+  it('returns null for an unknown building', () => {
+    expect(getRouteToBuilding(nearQuad, 'nope')).toBeNull()
   })
 })
