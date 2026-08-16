@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildings } from './buildings'
+import { buildingEntrances, edges, nodes } from './campusGraph'
 import { footprints } from './footprints'
 import { machines } from './machines'
 
@@ -178,4 +179,63 @@ describe('footprints', () => {
       ).toBe(true)
     }
   })
+})
+
+describe('campus graph', () => {
+  it('has unique node ids', () => {
+    const ids = nodes.map((n) => n.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('has node coordinates inside the Lawrence area', () => {
+    for (const node of nodes) {
+      const [lng, lat] = node.coordinates
+      expect(
+        lng >= LNG_MIN && lng <= LNG_MAX,
+        `node longitude out of range for ${node.id}: ${lng} (did you paste "lat, lng"? This file uses [lng, lat])`,
+      ).toBe(true)
+      expect(
+        lat >= LAT_MIN && lat <= LAT_MAX,
+        `node latitude out of range for ${node.id}: ${lat} (did you paste "lat, lng"? This file uses [lng, lat])`,
+      ).toBe(true)
+    }
+  })
+
+  it('has edges that reference real nodes', () => {
+    const nodeIds = new Set(nodes.map((n) => n.id))
+    for (const edge of edges) {
+      expect(nodeIds.has(edge.from), `edge references missing node: ${edge.from}`).toBe(true)
+      expect(nodeIds.has(edge.to), `edge references missing node: ${edge.to}`).toBe(true)
+    }
+  })
+
+  it('has no self-loop or duplicate edges', () => {
+    const seen = new Set<string>()
+    for (const edge of edges) {
+      expect(edge.from !== edge.to, `self-loop edge on ${edge.from}`).toBe(true)
+      // Edges are undirected, so a-b and b-a are the same edge.
+      const key = [edge.from, edge.to].sort().join('::')
+      expect(seen.has(key), `duplicate edge between ${edge.from} and ${edge.to}`).toBe(false)
+      seen.add(key)
+    }
+  })
+
+  it('maps building entrances to real buildings and real nodes', () => {
+    const buildingIds = new Set(buildings.map((b) => b.id))
+    const nodeIds = new Set(nodes.map((n) => n.id))
+    for (const [buildingId, nodeId] of Object.entries(buildingEntrances)) {
+      expect(
+        buildingIds.has(buildingId),
+        `entrance mapped for unknown building: ${buildingId}`,
+      ).toBe(true)
+      expect(
+        nodeIds.has(nodeId),
+        `entrance for ${buildingId} references missing node: ${nodeId}`,
+      ).toBe(true)
+    }
+  })
+
+  // Deliberately NOT tested: full connectivity. Digitizing happens cluster by
+  // cluster, so disconnected islands are an expected intermediate state —
+  // routing between them returns null and the UI falls back to a straight line.
 })
