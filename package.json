@@ -11,6 +11,7 @@
     "test": "vitest run",
     "fetch-footprints": "bun scripts/fetch-footprints.ts",
     "graph-from-geojson": "bun scripts/graph-from-geojson.ts",
+    "fetch-paths": "bun scripts/fetch-paths.ts",
     "fetch-ku-gis": "bun scripts/fetch-ku-gis.ts"
   },
   "dependencies": {
