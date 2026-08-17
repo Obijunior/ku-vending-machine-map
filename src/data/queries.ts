@@ -28,14 +28,23 @@ export function getRouteToBuilding(
   origin: Coordinates,
   buildingId: string,
 ): Route | null {
-  const entranceId = buildingEntrances[buildingId]
-  if (!entranceId) return null
+  const entranceIds = buildingEntrances[buildingId]
+  if (!entranceIds?.length) return null
 
   const graph = { nodes, edges }
   const start = nearestNode(graph, origin)
   if (!start) return null
 
-  const route = findRoute(graph, start.id, entranceId)
+  // A building can have several doors. Route to each and keep the shortest, so
+  // someone at the north door isn't sent around to a south one. Unreachable
+  // entrances yield null and simply lose.
+  let route: Route | null = null
+  for (const entranceId of entranceIds) {
+    const candidate = findRoute(graph, start.id, entranceId)
+    if (candidate && (!route || candidate.distanceMeters < route.distanceMeters)) {
+      route = candidate
+    }
+  }
   if (!route) return null
 
   const originLegMeters = distanceMeters(origin, start.coordinates)

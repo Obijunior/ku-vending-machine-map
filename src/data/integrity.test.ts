@@ -225,15 +225,27 @@ describe('campus graph', () => {
   it('maps building entrances to real buildings and real nodes', () => {
     const buildingIds = new Set(buildings.map((b) => b.id))
     const nodeIds = new Set(nodes.map((n) => n.id))
-    for (const [buildingId, nodeId] of Object.entries(buildingEntrances)) {
+    for (const [buildingId, entranceIds] of Object.entries(buildingEntrances)) {
       expect(
         buildingIds.has(buildingId),
         `entrance mapped for unknown building: ${buildingId}`,
       ).toBe(true)
+      // An empty array would silently disable routing to this building rather
+      // than failing loudly — treat it as an authoring mistake.
       expect(
-        nodeIds.has(nodeId),
-        `entrance for ${buildingId} references missing node: ${nodeId}`,
+        entranceIds.length > 0,
+        `${buildingId} has an empty entrance list; remove the key or add a door node`,
       ).toBe(true)
+      expect(
+        new Set(entranceIds).size === entranceIds.length,
+        `${buildingId} lists the same entrance node more than once`,
+      ).toBe(true)
+      for (const nodeId of entranceIds) {
+        expect(
+          nodeIds.has(nodeId),
+          `entrance for ${buildingId} references missing node: ${nodeId}`,
+        ).toBe(true)
+      }
     }
   })
 
@@ -278,13 +290,24 @@ describe('campus graph', () => {
   // Both ends must be digitized before this can mean anything. Using skipIf
   // (rather than an early return) keeps an undigitized graph VISIBLE as a skip
   // in the test output instead of a passing test that asserted nothing.
-  const wescoeEntrance = buildingEntrances['wescoe']
-  const budigEntrance = buildingEntrances['budig']
+  const wescoeEntrances = buildingEntrances['wescoe'] ?? []
+  const budigEntrances = buildingEntrances['budig'] ?? []
 
-  it.skipIf(!wescoeEntrance || !budigEntrance)(
+  it.skipIf(!wescoeEntrances.length || !budigEntrances.length)(
     'routes between two buildings that should be connected',
     () => {
-      const route = findRoute({ nodes, edges }, wescoeEntrance, budigEntrance)
+      // Any door to any door: the buildings are on the same network if some
+      // pair connects. Keep the shortest so the distance band below is checked
+      // against the route a visitor would actually walk.
+      let route: ReturnType<typeof findRoute> = null
+      for (const from of wescoeEntrances) {
+        for (const to of budigEntrances) {
+          const candidate = findRoute({ nodes, edges }, from, to)
+          if (candidate && (!route || candidate.distanceMeters < route.distanceMeters)) {
+            route = candidate
+          }
+        }
+      }
       expect(route, 'wescoe and budig are both mapped but no path connects them').not.toBeNull()
       // Sanity band: far enough apart to be a real walk, close enough that a
       // wildly wrong path (e.g. routing through another district) fails here.

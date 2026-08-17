@@ -14,5 +14,11 @@ export const nodes: GraphNode[] = []
 
 export const edges: GraphEdge[] = []
 
-/** Building id -> id of the node at that building's entrance. */
-export const buildingEntrances: Record<string, string> = {}
+/**
+ * Building id -> the nodes at that building's doors, in no particular order.
+ *
+ * List every door you digitize. Routing tries them all and keeps the shortest,
+ * so a visitor approaching Budig from the north is not sent around to a south
+ * door. A building with one door just gets a one-element array.
+ */
+export const buildingEntrances: Record<string, string[]> = {}

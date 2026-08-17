@@ -42,7 +42,7 @@ vi.mock('../data/campusGraph', () => ({
     { from: 'n-quad', to: 'n-corner' },
     { from: 'n-corner', to: 'n-wescoe-door' },
   ],
-  buildingEntrances: { wescoe: 'n-wescoe-door' },
+  buildingEntrances: { wescoe: ['n-wescoe-door'] },
 }))
 
 const QUAD: Coordinates = [-95.2478, 38.9558]

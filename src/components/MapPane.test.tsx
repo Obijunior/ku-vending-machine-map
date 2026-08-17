@@ -18,7 +18,7 @@ vi.mock('../data/campusGraph', () => ({
     { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
   ],
   edges: [{ from: 'n-quad', to: 'n-wescoe-door' }],
-  buildingEntrances: { wescoe: 'n-wescoe-door' },
+  buildingEntrances: { wescoe: ['n-wescoe-door'] },
 }))
 
 vi.mock('../indoor/IndoorView', () => ({
