@@ -132,7 +132,12 @@ prices to make an entry look complete.
 
 Walking routes come from a hand-authored graph in `src/data/campusGraph.ts`:
 nodes are points on the path network, edges connect them, and
-`buildingEntrances` maps a building id to the node at its door.
+`buildingEntrances` maps a building id to the nodes at its doors.
+
+A node is a decision point, not a waypoint: add one where paths branch and
+where a building has a door, not every few metres. The one exception is
+curvature — edges draw as straight lines, so a path that visibly bends needs
+an intermediate node or two to keep the drawn route off the grass.
 
 To extend it:
 
@@ -143,8 +148,25 @@ To extend it:
 3. Connect them in `edges`. Edges are undirected — list each pair once.
 4. Map any new building entrances in `buildingEntrances`.
 
+```ts
+export const buildingEntrances: Record<string, string[]> = {
+  // List every door you digitize. Routing tries them all and keeps the
+  // shortest, so someone arriving at Budig's north side is not sent around
+  // to a south door. A building with one door gets a one-element array.
+  budig: ['n-budig-north', 'n-budig-south'],
+  wescoe: ['n-wescoe-main'],
+}
+```
+
 Never add a distance or weight by hand: edge lengths are computed from node
 coordinates at load time so they cannot drift from the geometry.
+
+`bun run test` guards the authoring you can't eyeball: every edge and entrance
+must resolve to a real node, no self-loops or duplicate pairs, every edge under
+400 m, and every node within 500 m of some building. Those last two exist
+because one mistyped digit moves a node roughly 870 m — far enough to add a
+silent detour to every route through it, but well inside the Lawrence bounding
+box the other checks use.
 
 The graph is allowed to be incomplete. Buildings that aren't in
 `buildingEntrances`, and origins with no connected path, fall back to
