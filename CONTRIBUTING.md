@@ -141,12 +141,31 @@ an intermediate node or two to keep the drawn route off the grass.
 
 To extend it:
 
-1. Open [geojson.io](https://geojson.io), switch to satellite imagery, and drop
-   a Point at each path junction and building entrance you want to add.
-2. Copy the coordinates (already `[longitude, latitude]`) into `nodes` with a
-   stable, descriptive `n-`-prefixed id.
-3. Connect them in `edges`. Edges are undirected — list each pair once.
-4. Map any new building entrances in `buildingEntrances`.
+1. Open [geojson.io](https://geojson.io), switch to satellite imagery, and draw
+   the walking paths as **LineStrings**. Where two paths meet, start the next
+   line at that junction — clicking near it is close enough.
+2. To name a node (doors especially), drop a Point on it and give it an `id`
+   property. Click the point and use the properties table, or type it into the
+   JSON pane on the right.
+3. Save the export and run:
+
+   ```bash
+   bun run graph-from-geojson path/to/export.geojson
+   ```
+
+   Every vertex becomes a node and every consecutive pair an edge, so the
+   connections are the drawing rather than a list you maintain by hand.
+   Vertices within 4 m merge into one junction, and every merge is reported so
+   you can catch two nodes that were meant to stay distinct. Nodes already in
+   `campusGraph.ts` are reused by id, so running it per cluster extends the
+   graph instead of renumbering it.
+4. Paste the printed `nodes` and `edges` blocks over the existing ones, then map
+   any new doors in `buildingEntrances`.
+
+The script also reports how many **connected components** the graph has. More
+than one means some cluster is not joined to the rest — expected while you are
+still digitizing, but worth a look if you thought you had connected them, since
+routing between components silently falls back to a straight line.
 
 ```ts
 export const buildingEntrances: Record<string, string[]> = {
