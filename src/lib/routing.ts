@@ -132,10 +132,30 @@ export function findRoute(
   fromNodeId: string,
   toNodeId: string,
 ): Route | null {
+  return findRouteToAny(graph, fromNodeId, [toNodeId])
+}
+
+/**
+ * Shortest walking path from one node to whichever of several targets is
+ * closest — the nearest door of a building with several.
+ *
+ * This is a single search, not one per target. Dijkstra settles nodes in
+ * increasing distance order, so the first target it pops IS the nearest one;
+ * running a separate search per door would repeat the same work and cost
+ * roughly half a millisecond more each time. Stopping at the first of several
+ * targets also finishes sooner than hunting for one specific node.
+ */
+export function findRouteToAny(
+  graph: PathGraph,
+  fromNodeId: string,
+  toNodeIds: string[],
+): Route | null {
   const start = graph.nodes.get(fromNodeId)
-  const end = graph.nodes.get(toNodeId)
-  if (!start || !end) return null
-  if (fromNodeId === toNodeId) return { path: [start.coordinates], distanceMeters: 0 }
+  if (!start) return null
+
+  const targets = new Set(toNodeIds.filter((id) => graph.nodes.has(id)))
+  if (targets.size === 0) return null
+  if (targets.has(fromNodeId)) return { path: [start.coordinates], distanceMeters: 0 }
 
   const links = adjacencyFor(graph)
   const best = new Map<string, number>([[fromNodeId, 0]])
@@ -144,10 +164,14 @@ export function findRoute(
   const queue = new MinHeap()
   queue.push(fromNodeId, 0)
 
+  let reached: string | null = null
   while (queue.size > 0) {
     const current = queue.pop()!
     if (settled.has(current.id)) continue // a stale entry left by a better path
-    if (current.id === toNodeId) break
+    if (targets.has(current.id)) {
+      reached = current.id
+      break
+    }
     settled.add(current.id)
 
     for (const link of links.get(current.id) ?? []) {
@@ -161,12 +185,13 @@ export function findRoute(
     }
   }
 
-  const total = best.get(toNodeId)
-  if (total === undefined || !cameBy.has(toNodeId)) return null
+  if (reached === null) return null
+  const total = best.get(reached)
+  if (total === undefined || !cameBy.has(reached)) return null
 
   // Walk back to the start, stitching each edge's polyline in walking order.
   const segments: Coordinates[][] = []
-  let cursor = toNodeId
+  let cursor = reached
   while (cursor !== fromNodeId) {
     const step = cameBy.get(cursor)
     if (!step) return null

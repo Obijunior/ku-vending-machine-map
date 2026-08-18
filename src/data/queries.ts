@@ -2,7 +2,7 @@ import { buildings } from './buildings'
 import { buildingEntrances } from './campusGraph'
 import type { PathGraph } from './campusPaths'
 import { machines } from './machines'
-import { findRoute, nearestNode, type Route } from '../lib/routing'
+import { findRouteToAny, nearestNode, type Route } from '../lib/routing'
 import { distanceMeters } from '../lib/location'
 import type { Building, Coordinates, VendingMachine } from './types'
 
@@ -40,16 +40,10 @@ export function getRouteToBuilding(
   const start = nearestNode(graph, origin)
   if (!start) return null
 
-  // A building can have several doors. Route to each and keep the shortest, so
-  // someone at the north door isn't sent around to a south one. Unreachable
-  // entrances yield null and simply lose.
-  let route: Route | null = null
-  for (const entranceId of entranceIds) {
-    const candidate = findRoute(graph, start.id, entranceId)
-    if (candidate && (!route || candidate.distanceMeters < route.distanceMeters)) {
-      route = candidate
-    }
-  }
+  // A building can have several doors, and one search finds the nearest of
+  // them — Dijkstra reaches them in distance order, so no per-door search is
+  // needed and the cost does not grow as more doors get mapped.
+  const route = findRouteToAny(graph, start.id, entranceIds)
   if (!route) return null
 
   const originLegMeters = distanceMeters(origin, start.coordinates)
