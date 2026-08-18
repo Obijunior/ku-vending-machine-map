@@ -124,7 +124,7 @@ export function AppLayout() {
     <div className="app">
       <aside className={`sidebar ${mobileView === 'map' ? 'mobile-hidden' : ''}`}>
         <header className="app-header">
-          <h1>KU Vending (WIP)</h1>
+          <h1>KU Vending (STILL IN ALPHA!!)</h1>
           <p>Vending machines across the Lawrence campus</p>
         </header>
         <LocationControls
