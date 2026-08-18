@@ -214,6 +214,12 @@
 .map-pane {
   flex: 1;
   position: relative;
+  /* Clip everything to the pane. The pane is positioned and the sidebar is not,
+     so anything that escapes here paints over the sidebar rather than under it.
+     MapLibre clips its own markers, but nothing clipped the pane's other
+     children — the 3D view's hover labels, the pin prompt — and a marker for a
+     building off the west edge really does sit at a negative x. */
+  overflow: hidden;
 }
 
 /* Two selectors on purpose: the map div also carries maplibre-gl.css's
