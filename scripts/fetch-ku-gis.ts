@@ -70,6 +70,8 @@ async function main() {
   writeGeoJson(join(OUTPUT_ROOT, 'ku-districts.geojson'), districts)
   console.log(`ku-districts: ${districts.features.length} features`)
 
+  const withoutFloorPlans: string[] = []
+
   for (const building of buildings) {
     if (!building.gisLocationId) {
       console.log(`${building.id}: skipped (no unambiguous KU GIS location id)`)
@@ -82,10 +84,23 @@ async function main() {
       resultRecordCount: '2000',
     })
     if (floors.features.length === 0) {
-      throw new Error(`No KU floor polygons found for ${building.id} (${building.gisLocationId})`)
+      // Not every KU building has published floor plans, and that is fine:
+      // the footprint falls back to OpenStreetMap and the indoor view to a
+      // simple outline. Aborting the whole run over one such building would
+      // make this script unusable at campus scale.
+      withoutFloorPlans.push(`${building.id} (${building.gisLocationId})`)
+      console.warn(`${building.id}: no KU floor polygons — will fall back to the OSM footprint`)
+      continue
     }
     writeGeoJson(join(FLOOR_OUTPUT, `${building.id}.geojson`), floors)
     console.log(`${building.id}: ${floors.features.length} floor features`)
+  }
+
+  if (withoutFloorPlans.length > 0) {
+    console.log(
+      `\n${withoutFloorPlans.length} building(s) have no published floor plans: ` +
+        withoutFloorPlans.join(', '),
+    )
   }
 }
 

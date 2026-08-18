@@ -131,7 +131,7 @@ function addCampusDistrictLayers(map: MaplibreMap) {
     filter: UNMAPPED_FILTER as unknown as never,
     layout: {
       'text-field': 'Not mapped yet',
-      'text-size': 13,
+      'text-size': 25,
       'text-letter-spacing': 0.08,
       // Borrow a font the basemap style already loads: naming one it lacks
       // silently drops the label rather than erroring.

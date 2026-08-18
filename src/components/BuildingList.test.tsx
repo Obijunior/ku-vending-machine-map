@@ -47,12 +47,10 @@ function renderList() {
 }
 
 describe('BuildingList', () => {
-  it('lists every building with its machine count', () => {
+  it('lists buildings that have machines, with their counts', () => {
     renderList()
     expect(screen.getByRole('link', { name: /Wescoe Hall/ })).toHaveTextContent('2 machines')
     expect(screen.getByRole('link', { name: /Budig Hall/ })).toHaveTextContent('1 machine')
-    expect(screen.getByRole('link', { name: /Anschutz Library/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Kansas Union/ })).toBeInTheDocument()
   })
 
   it('filters buildings by name as you type', async () => {
@@ -71,6 +69,21 @@ describe('BuildingList', () => {
     expect(hit).toHaveTextContent('$1.75')
     expect(hit).toHaveTextContent('Wescoe Hall')
     expect(hit).toHaveAttribute('href', '/machine/wescoe-2-snack')
+  })
+
+  it('keeps machine-less buildings out of the browse list', () => {
+    renderList()
+    // Anschutz has no machines in this suite's fixture, so it should not be
+    // listed while browsing — most of campus is only a routing destination.
+    expect(screen.queryByRole('link', { name: /Anschutz Library/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Wescoe Hall/ })).toBeInTheDocument()
+  })
+
+  it('still finds a machine-less building by name when searching', async () => {
+    const user = userEvent.setup()
+    renderList()
+    await user.type(screen.getByRole('searchbox'), 'anschutz')
+    expect(screen.getByRole('link', { name: /Anschutz Library/ })).toBeInTheDocument()
   })
 
   it('shows a message when nothing matches', async () => {

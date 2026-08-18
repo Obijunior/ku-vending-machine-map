@@ -20,6 +20,23 @@ describe('buildings', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  it('have URL-safe kebab-case ids', () => {
+    // Ids become URLs (/building/:id). An empty or punctuation-leading id
+    // produces a route that silently 404s, and uniqueness alone won't catch it.
+    for (const building of buildings) {
+      expect(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(building.id),
+        `building id is not URL-safe kebab-case: '${building.id}' (${building.name})`,
+      ).toBe(true)
+    }
+  })
+
+  it('have non-empty names', () => {
+    for (const building of buildings) {
+      expect(building.name.trim() !== '', `empty name for ${building.id}`).toBe(true)
+    }
+  })
+
   it('exist', () => {
     expect(buildings.length).toBeGreaterThan(0)
   })

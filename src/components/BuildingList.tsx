@@ -79,13 +79,21 @@ export default function BuildingList({ origin = null }: Props) {
           distanceMeters(origin.coordinates, b.building.coordinates),
       )
     : results.items
+  // Browsing shows only buildings that actually have a machine. Most of campus
+  // is in the data as a routing destination and search target, and listing
+  // ~90 buildings reading "0 machines" would bury the handful worth opening.
+  // Searching still reaches all of them.
+  const visibleBuildings = searching
+    ? results.buildings
+    : results.buildings.filter((b) => getMachinesForBuilding(b.id).length > 0)
+
   const buildingResults = origin
-    ? [...results.buildings].sort(
+    ? [...visibleBuildings].sort(
         (a, b) =>
           distanceMeters(origin.coordinates, a.coordinates) -
           distanceMeters(origin.coordinates, b.coordinates),
       )
-    : results.buildings
+    : visibleBuildings
   const nearestMachines: NearestMachine[] = origin && !searching
     ? machines
         .map((machine) => {

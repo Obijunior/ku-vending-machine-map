@@ -28,6 +28,21 @@ function parseFloor(value: unknown): number | null {
   return Number.isFinite(floor) ? floor : null
 }
 
+// KU's floor data is not uniformly clean: the stadium's basement carries rings
+// plotted around [-102.58, 38.25], some 650km west of Lawrence. Projected into
+// the scene they would stretch the building across the horizon, so rings that
+// stray outside Lawrence are dropped rather than drawn.
+const LAWRENCE = { lngMin: -95.35, lngMax: -95.15, latMin: 38.9, latMax: 39.0 }
+
+function isInLawrence([lng, lat]: Coordinates): boolean {
+  return (
+    lng >= LAWRENCE.lngMin &&
+    lng <= LAWRENCE.lngMax &&
+    lat >= LAWRENCE.latMin &&
+    lat <= LAWRENCE.latMax
+  )
+}
+
 function normalizeRing(value: unknown): Coordinates[] | null {
   if (!Array.isArray(value)) return null
   const points: Coordinates[] = []
@@ -40,7 +55,9 @@ function normalizeRing(value: unknown): Coordinates[] | null {
     ) {
       return null
     }
-    points.push([position[0], position[1]])
+    const point: Coordinates = [position[0], position[1]]
+    if (!isInLawrence(point)) return null
+    points.push(point)
   }
   return points.length >= 4 ? points : null
 }

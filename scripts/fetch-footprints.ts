@@ -20,6 +20,22 @@ type LngLat = [number, number]
 const KU_FLOORS_DIR = join('public', 'data', 'ku-floors')
 const KU_FLOOR_LEVEL_FIELD = 'SDE.FloorAll.FLOORLOCATION'
 
+// KU's floor data is not uniformly clean: the stadium's basement, for one,
+// carries rings plotted around [-102.58, 38.25] — roughly 650km west, in
+// Colorado. Picking the largest ring would hand that one the win every time,
+// so anything outside Lawrence is discarded before choosing.
+const LAWRENCE_BOUNDS = { lngMin: -95.35, lngMax: -95.15, latMin: 38.9, latMax: 39.0 }
+
+function isInLawrence(ring: LngLat[]): boolean {
+  return ring.every(
+    ([lng, lat]) =>
+      lng >= LAWRENCE_BOUNDS.lngMin &&
+      lng <= LAWRENCE_BOUNDS.lngMax &&
+      lat >= LAWRENCE_BOUNDS.latMin &&
+      lat <= LAWRENCE_BOUNDS.latMax,
+  )
+}
+
 type GeoJsonFeature = {
   properties?: Record<string, unknown>
   geometry?: { type?: string; coordinates?: unknown }
@@ -67,6 +83,10 @@ function kuFloorOutline(buildingId: string): LngLat[] | null {
     if (typeof level !== 'string' || !/^-?\d+(?:\.\d+)?$/.test(level.trim())) continue
     for (const ring of outerRings(feature.geometry)) {
       if (ring.length < 4) continue
+      if (!isInLawrence(ring)) {
+        console.warn(`${buildingId}: skipped a floor ring plotted outside Lawrence (bad KU data)`)
+        continue
+      }
       if (!best || ringExtentMeters(ring) > ringExtentMeters(best)) best = ring
     }
   }
