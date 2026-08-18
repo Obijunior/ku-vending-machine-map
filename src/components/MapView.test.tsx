@@ -124,6 +124,32 @@ describe('MapView', () => {
     expect(layers.some((layer) => layer.id === 'walking-route-line')).toBe(true)
   })
 
+  it('marks districts outside the covered area as not mapped yet', () => {
+    renderMap()
+    const label = layers.find((l) => l.id === 'ku-district-unmapped-label') as
+      | { layout?: Record<string, unknown>; filter?: unknown }
+      | undefined
+    expect(label).toBeDefined()
+    expect(label!.layout?.['text-field']).toBe('Not mapped yet')
+    // Uses a font the basemap already loads — naming a missing one drops the
+    // label silently instead of erroring.
+    expect(label!.layout?.['text-font']).toEqual(['Noto Sans Regular'])
+  })
+
+  it('keeps the blue campus styling off the uncovered districts', () => {
+    renderMap()
+    const covered = layers.find((l) => l.id === 'ku-district-fill') as
+      | { filter?: unknown }
+      | undefined
+    const uncovered = layers.find((l) => l.id === 'ku-district-unmapped-fill') as
+      | { filter?: unknown }
+      | undefined
+    // The two fills must be complements, or a district gets both or neither.
+    expect(JSON.stringify(uncovered!.filter)).toBe(
+      JSON.stringify(['!', covered!.filter]),
+    )
+  })
+
   it('leaves the route source empty when there is no route', () => {
     renderMap()
     expect(sourceData.get('walking-route')).toEqual({

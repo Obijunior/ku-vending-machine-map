@@ -50,6 +50,11 @@ function addRouteLayer(map: MaplibreMap) {
   })
 }
 
+/** Districts the app actually covers. West campus is out of scope for now. */
+const COVERED_DISTRICTS = ['North District', 'Central District']
+const UNMAPPED_FILTER = ['!', ['in', ['get', 'DISTRICT'], ['literal', COVERED_DISTRICTS]]] as const
+const COVERED_FILTER = ['in', ['get', 'DISTRICT'], ['literal', COVERED_DISTRICTS]] as const
+
 function addCampusDistrictLayers(map: MaplibreMap) {
   map.addSource(KU_DISTRICTS_SOURCE_ID, {
     type: 'geojson',
@@ -58,13 +63,15 @@ function addCampusDistrictLayers(map: MaplibreMap) {
   })
 
   // Keep campus shading below place and road labels so the basemap stays legible.
-  const firstLabelLayer = map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id
+  const styleLayers = map.getStyle().layers
+  const firstLabelLayer = styleLayers.find((layer) => layer.type === 'symbol')?.id
 
   map.addLayer(
     {
       id: 'ku-district-fill',
       type: 'fill',
       source: KU_DISTRICTS_SOURCE_ID,
+      filter: COVERED_FILTER as unknown as never,
       paint: {
         'fill-color': '#0051ba',
         'fill-opacity': 0.05, // change to make fill darker or lighter
@@ -77,6 +84,7 @@ function addCampusDistrictLayers(map: MaplibreMap) {
       id: 'ku-district-outline',
       type: 'line',
       source: KU_DISTRICTS_SOURCE_ID,
+      filter: COVERED_FILTER as unknown as never,
       paint: {
         'line-color': '#0051ba',
         'line-width': 2.5,
@@ -85,6 +93,62 @@ function addCampusDistrictLayers(map: MaplibreMap) {
     },
     firstLabelLayer,
   )
+
+  // Districts with no machine or path data yet read as grey and dashed, so the
+  // blue campus outline means "covered" rather than just "this is KU".
+  map.addLayer(
+    {
+      id: 'ku-district-unmapped-fill',
+      type: 'fill',
+      source: KU_DISTRICTS_SOURCE_ID,
+      filter: UNMAPPED_FILTER as unknown as never,
+      paint: {
+        'fill-color': '#6b7488',
+        'fill-opacity': 0.06,
+      },
+    },
+    firstLabelLayer,
+  )
+  map.addLayer(
+    {
+      id: 'ku-district-unmapped-outline',
+      type: 'line',
+      source: KU_DISTRICTS_SOURCE_ID,
+      filter: UNMAPPED_FILTER as unknown as never,
+      paint: {
+        'line-color': '#6b7488',
+        'line-width': 1.5,
+        'line-opacity': 0.7,
+        'line-dasharray': [3, 2],
+      },
+    },
+    firstLabelLayer,
+  )
+  map.addLayer({
+    id: 'ku-district-unmapped-label',
+    type: 'symbol',
+    source: KU_DISTRICTS_SOURCE_ID,
+    filter: UNMAPPED_FILTER as unknown as never,
+    layout: {
+      'text-field': 'Not mapped yet',
+      'text-size': 13,
+      'text-letter-spacing': 0.08,
+      // Borrow a font the basemap style already loads: naming one it lacks
+      // silently drops the label rather than erroring.
+      'text-font': styleLayers
+        .flatMap((layer) =>
+          layer.type === 'symbol' && layer.layout?.['text-font']
+            ? [layer.layout['text-font'] as string[]]
+            : [],
+        )
+        .find((font) => Array.isArray(font) && font.length > 0) ?? ['Noto Sans Regular'],
+    },
+    paint: {
+      'text-color': '#5b6883',
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1.6,
+    },
+  })
 }
 
 type Props = {
