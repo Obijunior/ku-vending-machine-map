@@ -57,14 +57,20 @@ function outerRings(geometry: GeoJsonFeature['geometry']): LngLat[][] {
 }
 
 /**
- * Building outline taken from the committed KU floor snapshot: the largest
- * outer ring across every numeric level. Largest (rather than floor 1) so the
- * outline contains every floor of the stack — it drives the indoor view's
- * camera framing and projection origin, where too big is harmless and too
- * small clips the building. Non-numeric levels such as ROOF are skipped, the
- * same rule src/indoor/kuFloors.ts applies at runtime.
+ * Building outline taken from the committed KU floor snapshot.
+ *
+ * A footprint is where the building meets the ground, so this uses the GROUND
+ * FLOOR rather than whichever storey happens to be biggest. Floors genuinely
+ * differ in shape — upper storeys are set back, basements sprawl under plazas,
+ * and some levels are stored as a crude four-corner box (Wescoe's floor 4 is
+ * five points covering more area than its real 138-point ground floor). Taking
+ * the largest ring across all levels therefore returns a shape that does not
+ * match the building anyone sees.
+ *
+ * Ranking is by AREA, not by distance to the farthest vertex, which a long
+ * narrow wing would otherwise win.
  */
-function kuFloorOutline(buildingId: string): LngLat[] | null {
+function kuFloorOutline(buildingId: string, pin: LngLat): LngLat[] | null {
   const path = join(KU_FLOORS_DIR, `${buildingId}.geojson`)
   if (!existsSync(path)) return null
 
@@ -77,26 +83,75 @@ function kuFloorOutline(buildingId: string): LngLat[] | null {
   }
   if (!Array.isArray(collection.features)) return null
 
-  let best: LngLat[] | null = null
+  // Collect every usable ring, tagged with its level.
+  const rings: { level: number; ring: LngLat[]; area: number }[] = []
   for (const feature of collection.features) {
-    const level = feature.properties?.[KU_FLOOR_LEVEL_FIELD]
-    if (typeof level !== 'string' || !/^-?\d+(?:\.\d+)?$/.test(level.trim())) continue
+    const raw = feature.properties?.[KU_FLOOR_LEVEL_FIELD]
+    if (typeof raw !== 'string' || !/^-?\d+(?:\.\d+)?$/.test(raw.trim())) continue
+    const level = Number(raw)
     for (const ring of outerRings(feature.geometry)) {
       if (ring.length < 4) continue
       if (!isInLawrence(ring)) {
         console.warn(`${buildingId}: skipped a floor ring plotted outside Lawrence (bad KU data)`)
         continue
       }
-      if (!best || ringExtentMeters(ring) > ringExtentMeters(best)) best = ring
+      rings.push({ level, ring, area: ringAreaSqMetres(ring) })
     }
   }
-  return best
+  if (rings.length === 0) return null
+
+  // Ground floor if it exists, else the lowest above-ground level, else
+  // anything (a building mapped only as a basement still needs an outline).
+  const aboveGround = rings.filter((r) => r.level >= 1)
+  const pool = aboveGround.length > 0 ? aboveGround : rings
+  const groundLevel = Math.min(...pool.map((r) => r.level))
+  const onGround = pool.filter((r) => r.level === groundLevel)
+
+  // KU groups some neighbours under one location id — the scholarship halls
+  // share theirs — so a floor can hold several buildings' outlines. Picking by
+  // area alone then returns whichever neighbour is biggest. The building we
+  // want is the one the pin sits in, exactly as the OSM matcher below decides.
+  const containing = onGround.filter((r) => pointInPolygon(pin, r.ring))
+  if (containing.length > 0) {
+    return containing.reduce((best, r) => (r.area > best.area ? r : best)).ring
+  }
+
+  // Pin outside every ring (a centroid can fall outside a concave outline):
+  // fall back to the nearest outline rather than the largest.
+  const nearest = onGround.reduce((best, r) =>
+    distanceMeters(centroidOf(r.ring), pin) < distanceMeters(centroidOf(best.ring), pin) ? r : best,
+  )
+
+  // Last check: is this plausibly the same building? A gisLocationId is
+  // assigned from GIS layer 1, but layer 4's floor plans do not always use the
+  // same numbering — several small halls came back with the floor plan of some
+  // structure a hundred metres away. Trusting the id alone puts a 7m outline
+  // under a building the visitor is standing in front of, so reject an outline
+  // that sits too far from the pin to be the same building and let OSM answer.
+  const offset = distanceMeters(centroidOf(nearest.ring), pin)
+  const extent = Math.max(...nearest.ring.map((p) => distanceMeters(centroidOf(nearest.ring), p)))
+  // Scaled to the building: a sprawling complex legitimately has its centroid
+  // well off the pin, while a 20m hall 77m away is simply not that hall.
+  const tolerance = Math.max(60, extent * 2)
+  if (offset > tolerance) {
+    console.warn(
+      `${buildingId}: KU floor plan sits ${Math.round(offset)}m from the pin ` +
+        `(outline is only ~${Math.round(extent)}m across) — looks like another building, using OSM instead`,
+    )
+    return null
+  }
+
+  return nearest.ring
 }
 
-/** Distance from a ring's centroid to its farthest vertex. */
-function ringExtentMeters(ring: LngLat[]): number {
-  const c = centroidOf(ring)
-  return Math.max(...ring.map((p) => distanceMeters(c, p)))
+/** Shoelace area in square metres, for ranking rings by actual size. */
+function ringAreaSqMetres(ring: LngLat[]): number {
+  let sum = 0
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    sum += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1]
+  }
+  const metresPerDegLng = METERS_PER_DEG_LAT * Math.cos((ring[0][1] * Math.PI) / 180)
+  return Math.abs(sum / 2) * metresPerDegLng * METERS_PER_DEG_LAT
 }
 
 // Primary mirror first; if it returns 4xx/5xx, fall through to the backups.
@@ -183,7 +238,7 @@ async function main() {
   // Source 1: KU's own floor snapshots, for every building that has one.
   const needsOsm: typeof buildings = []
   for (const building of buildings) {
-    const outline = kuFloorOutline(building.id)
+    const outline = kuFloorOutline(building.id, building.coordinates)
     if (outline) {
       const dist = Math.round(distanceMeters(centroidOf(outline), building.coordinates))
       console.log(
