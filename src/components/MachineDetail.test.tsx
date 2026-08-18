@@ -33,20 +33,30 @@ vi.mock('../data/machines', () => ({
   ],
 }))
 
+vi.mock('../data/campusGraph', () => ({
+  buildingEntrances: { wescoe: ['n-wescoe-door'] },
+}))
+
+// Stand in for the fetched network so the component renders synchronously —
+// jsdom has no server to load the real asset from. Only the hook is replaced;
+// edgePolyline stays real so routing behaves exactly as it does in the app.
+//
 // Deliberately a detour: the path runs east to a corner and then back
 // northwest to the door, so the walked distance is roughly triple the
 // straight-line distance and the two can't be confused.
-vi.mock('../data/campusGraph', () => ({
-  nodes: [
-    { id: 'n-quad', coordinates: [-95.2478, 38.9558] },
-    { id: 'n-corner', coordinates: [-95.245, 38.9558] },
-    { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
-  ],
-  edges: [
-    { from: 'n-quad', to: 'n-corner' },
-    { from: 'n-corner', to: 'n-wescoe-door' },
-  ],
-  buildingEntrances: { wescoe: ['n-wescoe-door'] },
+vi.mock('../data/campusPaths', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../data/campusPaths')>()),
+  useCampusPaths: () => ({
+    nodes: new Map([
+      ['n-quad', { id: 'n-quad', coordinates: [-95.2478, 38.9558] }],
+      ['n-corner', { id: 'n-corner', coordinates: [-95.245, 38.9558] }],
+      ['n-wescoe-door', { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] }],
+    ]),
+    edges: [
+      { from: 'n-quad', to: 'n-corner', between: [] },
+      { from: 'n-corner', to: 'n-wescoe-door', between: [] },
+    ],
+  }),
 }))
 
 const QUAD: Coordinates = [-95.2478, 38.9558]

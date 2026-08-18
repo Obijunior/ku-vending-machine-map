@@ -1,5 +1,6 @@
 import { buildings } from './buildings'
-import { buildingEntrances, edges, nodes } from './campusGraph'
+import { buildingEntrances } from './campusGraph'
+import type { PathGraph } from './campusPaths'
 import { machines } from './machines'
 import { findRoute, nearestNode, type Route } from '../lib/routing'
 import { distanceMeters } from '../lib/location'
@@ -25,13 +26,17 @@ export function getMachinesForBuilding(buildingId: string): VendingMachine[] {
  * fall back to straight-line distance and the Google Maps link on null.
  */
 export function getRouteToBuilding(
+  graph: PathGraph | null,
   origin: Coordinates,
   buildingId: string,
 ): Route | null {
+  // The network loads on demand, so "not here yet" is a normal state and
+  // simply means the caller keeps using straight-line distance.
+  if (!graph) return null
+
   const entranceIds = buildingEntrances[buildingId]
   if (!entranceIds?.length) return null
 
-  const graph = { nodes, edges }
   const start = nearestNode(graph, origin)
   if (!start) return null
 

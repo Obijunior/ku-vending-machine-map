@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { getBuildingById, getMachineById, getRouteToBuilding } from '../data/queries'
+import { useCampusPaths } from '../data/campusPaths'
 import type { UserOrigin } from '../data/types'
 import { formatPrice, machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
@@ -13,12 +14,15 @@ export default function MachineDetail({ origin = null }: Props) {
   const { id } = useParams()
   const machine = id ? getMachineById(id) : undefined
   const building = machine ? getBuildingById(machine.buildingId) : undefined
+  // Hooks must run before the not-found return, or the hook order changes
+  // between a known and an unknown machine id.
+  const paths = useCampusPaths(origin !== null)
   if (!machine || !building) return <NotFound />
 
   const destination = machine.position ?? building.coordinates
-  // The graph is an outdoor network, so it routes to the building's entrance;
-  // the machine's own position only matters for the straight-line fallback.
-  const route = origin ? getRouteToBuilding(origin.coordinates, building.id) : null
+  // The network is outdoors, so it routes to the building's entrance; the
+  // machine's own position only matters for the straight-line fallback.
+  const route = origin ? getRouteToBuilding(paths, origin.coordinates, building.id) : null
   const distance = origin
     ? formatDistance(
         route?.distanceMeters ?? distanceMeters(origin.coordinates, destination),

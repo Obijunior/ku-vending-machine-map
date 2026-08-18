@@ -12,6 +12,7 @@
     "fetch-footprints": "bun scripts/fetch-footprints.ts",
     "graph-from-geojson": "bun scripts/graph-from-geojson.ts",
     "fetch-paths": "bun scripts/fetch-paths.ts",
+    "suggest-entrances": "bun scripts/suggest-entrances.ts",
     "fetch-ku-gis": "bun scripts/fetch-ku-gis.ts"
   },
   "dependencies": {

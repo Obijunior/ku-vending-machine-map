@@ -37,7 +37,8 @@ Application data is maintained in:
 
 - `src/data/buildings.ts` for buildings, coordinates, and KU GIS identifiers
 - `src/data/machines.ts` for machines, locations, and inventory
-- `src/data/campusGraph.ts` for the hand-authored walking-path network
+- `src/data/campusGraph.ts` for the hand-authored map of building entrances
+- `public/data/campus-paths.json` for the generated OpenStreetMap walking network
 - `src/data/footprints.ts` for generated OpenStreetMap building footprints
 - `public/data/ku-districts.geojson` for the generated campus district polygons
 - `public/data/ku-floors/*.geojson` for generated, per-building floor polygons
@@ -130,67 +131,64 @@ prices to make an entry look complete.
 
 ### Adding walking paths
 
-Walking routes come from a hand-authored graph in `src/data/campusGraph.ts`:
-nodes are points on the path network, edges connect them, and
-`buildingEntrances` maps a building id to the nodes at its doors.
+Walking routes run over a network of paths across campus. That network is
+**generated from OpenStreetMap**, not drawn by hand — KU's campus is mapped in
+detail there, down to sidewalks, steps and street crossings.
 
-A node is a decision point, not a waypoint: add one where paths branch and
-where a building has a door, not every few metres. The one exception is
-curvature — edges draw as straight lines, so a path that visibly bends needs
-an intermediate node or two to keep the drawn route off the grass.
+```bash
+bun run fetch-paths
+```
 
-To extend it:
+This writes `public/data/campus-paths.json` (~220 KB), which the app fetches the
+first time someone asks for a route. Re-run it to pick up OSM improvements.
 
-1. Open [geojson.io](https://geojson.io), switch to satellite imagery, and draw
-   the walking paths as **LineStrings**. Where two paths meet, start the next
-   line at that junction — clicking near it is close enough.
-2. To name a node (doors especially), drop a Point on it and give it an `id`
-   property. Click the point and use the properties table, or type it into the
-   JSON pane on the right.
-3. Save the export and run:
+The one thing OpenStreetMap cannot tell us is which junction counts as a given
+building's front door, so that stays hand-authored in `src/data/campusGraph.ts`.
+To find the ids:
 
-   ```bash
-   bun run graph-from-geojson path/to/export.geojson
-   ```
+```bash
+bun run suggest-entrances
+```
 
-   Every vertex becomes a node and every consecutive pair an edge, so the
-   connections are the drawing rather than a list you maintain by hand.
-   Vertices within 4 m merge into one junction, and every merge is reported so
-   you can catch two nodes that were meant to stay distinct. Nodes already in
-   `campusGraph.ts` are reused by id, so running it per cluster extends the
-   graph instead of renumbering it.
-4. Paste the printed `nodes` and `edges` blocks over the existing ones, then map
-   any new doors in `buildingEntrances`.
-
-The script also reports how many **connected components** the graph has. More
-than one means some cluster is not joined to the rest — expected while you are
-still digitizing, but worth a look if you thought you had connected them, since
-routing between components silently falls back to a straight line.
+That shortlists the network nodes nearest each building's footprint, labelled by
+which side they sit on, and warns when two adjacent buildings share a candidate
+— giving the same node to both would make the walk between them zero metres.
+Confirm the ones that are really doors and add them:
 
 ```ts
 export const buildingEntrances: Record<string, string[]> = {
-  // List every door you digitize. Routing tries them all and keeps the
-  // shortest, so someone arriving at Budig's north side is not sent around
-  // to a south door. A building with one door gets a one-element array.
-  budig: ['n-budig-north', 'n-budig-south'],
-  wescoe: ['n-wescoe-main'],
+  // List every door. Routing tries them all and keeps the shortest, so someone
+  // arriving at Budig's north side is not sent around to a south door.
+  budig: ['9042193012', '9042193016'],
+  wescoe: ['5721555659'],
 }
 ```
 
-Never add a distance or weight by hand: edge lengths are computed from node
-coordinates at load time so they cannot drift from the geometry.
+Ids are OpenStreetMap node ids, so re-running `fetch-paths` keeps them stable
+and this map survives regeneration. `bun run test` checks that every id still
+resolves to a node in the generated network and that no entrance sits absurdly
+far from its own building.
 
-`bun run test` guards the authoring you can't eyeball: every edge and entrance
-must resolve to a real node, no self-loops or duplicate pairs, every edge under
-400 m, and every node within 500 m of some building. Those last two exist
-because one mistyped digit moves a node roughly 870 m — far enough to add a
-silent detour to every route through it, but well inside the Lawrence bounding
-box the other checks use.
+The map is allowed to be incomplete. A building that isn't listed falls back to
+straight-line distance and the Google Maps link, so you can map doors a few
+buildings at a time.
 
-The graph is allowed to be incomplete. Buildings that aren't in
-`buildingEntrances`, and origins with no connected path, fall back to
-straight-line distance and the Google Maps link — so you can digitize one
-cluster of campus at a time.
+#### Filling a gap OpenStreetMap missed
+
+If a real path is absent from OSM, draw it on [geojson.io](https://geojson.io)
+as **LineStrings**, starting each new line at the junction it meets, and run:
+
+```bash
+bun run graph-from-geojson path/to/export.geojson
+```
+
+Vertices become nodes and consecutive pairs become edges, so the connections are
+the drawing rather than a list you maintain by hand. Vertices within 4 m merge
+into one junction, and every merge is reported so you can catch two that were
+meant to stay distinct.
+
+The better fix is usually to add the path to OpenStreetMap itself — it benefits
+everyone and survives regeneration.
 
 ### Coordinates
 

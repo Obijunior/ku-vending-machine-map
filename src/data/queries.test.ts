@@ -5,31 +5,39 @@ import {
   getMachinesForBuilding,
   getRouteToBuilding,
 } from './queries'
+import type { PathGraph } from './campusPaths'
 import type { Coordinates } from './types'
 
-// A small stand-in for the real campus graph, so these tests don't depend on
-// how much of campus has actually been digitized yet.
+// Only the entrance map is mocked. The network itself is passed in as an
+// argument now, which keeps these tests independent of the generated asset.
 //
 // Budig deliberately has two doors at different distances from the quad, and
 // the FAR one is listed first — so a naive implementation that took the first
 // entrance would fail the "closest door" test rather than pass it by luck.
 vi.mock('./campusGraph', () => ({
-  nodes: [
-    { id: 'n-quad', coordinates: [-95.2480, 38.9570] },
-    { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
-    { id: 'n-budig-near', coordinates: [-95.2482, 38.9570] },
-    { id: 'n-budig-far', coordinates: [-95.2490, 38.9570] },
-  ],
-  edges: [
-    { from: 'n-quad', to: 'n-wescoe-door' },
-    { from: 'n-quad', to: 'n-budig-near' },
-    { from: 'n-budig-near', to: 'n-budig-far' },
-  ],
   buildingEntrances: {
     wescoe: ['n-wescoe-door'],
     budig: ['n-budig-far', 'n-budig-near'],
   },
 }))
+
+const graph: PathGraph = {
+  nodes: new Map(
+    (
+      [
+        ['n-quad', [-95.248, 38.957]],
+        ['n-wescoe-door', [-95.2478, 38.9573]],
+        ['n-budig-near', [-95.2482, 38.957]],
+        ['n-budig-far', [-95.249, 38.957]],
+      ] as [string, Coordinates][]
+    ).map(([id, coordinates]) => [id, { id, coordinates }]),
+  ),
+  edges: [
+    { from: 'n-quad', to: 'n-wescoe-door', between: [] },
+    { from: 'n-quad', to: 'n-budig-near', between: [] },
+    { from: 'n-budig-near', to: 'n-budig-far', between: [] },
+  ],
+}
 
 describe('getBuildingById', () => {
   it('returns the building for a known id', () => {
@@ -66,7 +74,7 @@ describe('getRouteToBuilding', () => {
   const nearQuad: Coordinates = [-95.24801, 38.95701]
 
   it('routes from the origin, through the nearest node, to the building entrance', () => {
-    const route = getRouteToBuilding(nearQuad, 'wescoe')
+    const route = getRouteToBuilding(graph, nearQuad, 'wescoe')
     expect(route).not.toBeNull()
     expect(route!.path).toEqual([
       nearQuad,
@@ -78,7 +86,7 @@ describe('getRouteToBuilding', () => {
 
   it('does not duplicate the vertex when the origin sits exactly on a node', () => {
     const onNode: Coordinates = [-95.248, 38.957]
-    const route = getRouteToBuilding(onNode, 'wescoe')
+    const route = getRouteToBuilding(graph, onNode, 'wescoe')
     expect(route).not.toBeNull()
     expect(route!.path).toEqual([
       [-95.248, 38.957],
@@ -88,7 +96,7 @@ describe('getRouteToBuilding', () => {
 
   it('routes to the closest door when a building has several', () => {
     const onQuad: Coordinates = [-95.248, 38.957]
-    const route = getRouteToBuilding(onQuad, 'budig')
+    const route = getRouteToBuilding(graph, onQuad, 'budig')
     expect(route).not.toBeNull()
     // n-budig-near, not the n-budig-far listed ahead of it.
     expect(route!.path.at(-1)).toEqual([-95.2482, 38.957])
@@ -97,10 +105,16 @@ describe('getRouteToBuilding', () => {
   })
 
   it('returns null for a building with no entrance on the graph', () => {
-    expect(getRouteToBuilding(nearQuad, 'anschutz')).toBeNull()
+    expect(getRouteToBuilding(graph, nearQuad, 'anschutz')).toBeNull()
   })
 
   it('returns null for an unknown building', () => {
-    expect(getRouteToBuilding(nearQuad, 'nope')).toBeNull()
+    expect(getRouteToBuilding(graph, nearQuad, 'nope')).toBeNull()
+  })
+
+  it('returns null while the network is still loading', () => {
+    // The asset is fetched on demand, so null is a normal early state — the
+    // caller keeps showing straight-line distance until it arrives.
+    expect(getRouteToBuilding(null, nearQuad, 'wescoe')).toBeNull()
   })
 })

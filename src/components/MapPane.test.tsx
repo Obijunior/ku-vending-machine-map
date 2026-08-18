@@ -13,12 +13,20 @@ vi.mock('./MapView', () => ({
 }))
 
 vi.mock('../data/campusGraph', () => ({
-  nodes: [
-    { id: 'n-quad', coordinates: [-95.248, 38.957] },
-    { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] },
-  ],
-  edges: [{ from: 'n-quad', to: 'n-wescoe-door' }],
   buildingEntrances: { wescoe: ['n-wescoe-door'] },
+}))
+
+// Stand in for the fetched network so the pane renders synchronously — jsdom
+// has no server to load the real asset from. Only the hook is replaced.
+vi.mock('../data/campusPaths', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../data/campusPaths')>()),
+  useCampusPaths: () => ({
+    nodes: new Map([
+      ['n-quad', { id: 'n-quad', coordinates: [-95.248, 38.957] }],
+      ['n-wescoe-door', { id: 'n-wescoe-door', coordinates: [-95.2478, 38.9573] }],
+    ]),
+    edges: [{ from: 'n-quad', to: 'n-wescoe-door', between: [] }],
+  }),
 }))
 
 vi.mock('../indoor/IndoorView', () => ({

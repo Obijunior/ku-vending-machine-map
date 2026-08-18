@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { getBuildingById, getMachinesForBuilding, getRouteToBuilding } from '../data/queries'
+import { useCampusPaths } from '../data/campusPaths'
 import type { UserOrigin } from '../data/types'
 import { machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
@@ -12,12 +13,15 @@ type Props = {
 export default function BuildingDetail({ origin = null }: Props) {
   const { id } = useParams()
   const building = id ? getBuildingById(id) : undefined
+  // Hooks must run before the not-found return, or the hook order changes
+  // between a known and an unknown building id.
+  const paths = useCampusPaths(origin !== null)
   if (!building) return <NotFound />
 
   const buildingMachines = getMachinesForBuilding(building.id)
   // Prefer the real walked distance; fall back to straight-line when this
-  // building isn't on the path graph yet.
-  const route = origin ? getRouteToBuilding(origin.coordinates, building.id) : null
+  // building isn't on the path network, or the network hasn't arrived yet.
+  const route = origin ? getRouteToBuilding(paths, origin.coordinates, building.id) : null
   const distance = origin
     ? formatDistance(
         route?.distanceMeters ?? distanceMeters(origin.coordinates, building.coordinates),

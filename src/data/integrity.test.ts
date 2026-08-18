@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { buildings } from './buildings'
-import { buildingEntrances, edges, nodes } from './campusGraph'
+import { buildingEntrances } from './campusGraph'
 import { footprints } from './footprints'
 import { machines } from './machines'
 import { findRoute } from '../lib/routing'
-import { distanceMeters } from '../lib/location'
+import type { PathGraph } from './campusPaths'
+import type { Coordinates } from './types'
 
 // Bounding box for the Lawrence area — catches lat/lng swaps and stray pastes.
 const LNG_MIN = -95.35
@@ -183,55 +185,65 @@ describe('footprints', () => {
   })
 })
 
-describe('campus graph', () => {
-  it('has unique node ids', () => {
-    const ids = nodes.map((n) => n.id)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
 
-  it('has node coordinates inside the Lawrence area', () => {
-    for (const node of nodes) {
-      const [lng, lat] = node.coordinates
-      expect(
-        lng >= LNG_MIN && lng <= LNG_MAX,
-        `node longitude out of range for ${node.id}: ${lng} (did you paste "lat, lng"? This file uses [lng, lat])`,
-      ).toBe(true)
-      expect(
-        lat >= LAT_MIN && lat <= LAT_MAX,
-        `node latitude out of range for ${node.id}: ${lat} (did you paste "lat, lng"? This file uses [lng, lat])`,
-      ).toBe(true)
-    }
+describe('campus walking network', () => {
+  // The network itself is generated from OpenStreetMap, so it needs no
+  // typo guards — but the hand-authored entrance map points INTO it, and a
+  // stale or mistyped node id there is exactly the mistake worth catching.
+  const raw = JSON.parse(
+    readFileSync('public/data/campus-paths.json', 'utf-8'),
+  ) as { nodes: Record<string, Coordinates>; edges: [string, string, Coordinates[]][] }
+
+  const graph: PathGraph = {
+    nodes: new Map(
+      Object.entries(raw.nodes).map(([id, coordinates]) => [id, { id, coordinates }]),
+    ),
+    edges: raw.edges.map(([from, to, between]) => ({ from, to, between })),
+  }
+
+  it('ships a network with nodes and edges', () => {
+    expect(graph.nodes.size).toBeGreaterThan(100)
+    expect(graph.edges.length).toBeGreaterThan(100)
   })
 
   it('has edges that reference real nodes', () => {
-    const nodeIds = new Set(nodes.map((n) => n.id))
-    for (const edge of edges) {
-      expect(nodeIds.has(edge.from), `edge references missing node: ${edge.from}`).toBe(true)
-      expect(nodeIds.has(edge.to), `edge references missing node: ${edge.to}`).toBe(true)
+    for (const edge of graph.edges) {
+      expect(graph.nodes.has(edge.from), `edge references missing node: ${edge.from}`).toBe(true)
+      expect(graph.nodes.has(edge.to), `edge references missing node: ${edge.to}`).toBe(true)
     }
   })
 
-  it('has no self-loop or duplicate edges', () => {
-    const seen = new Set<string>()
-    for (const edge of edges) {
-      expect(edge.from !== edge.to, `self-loop edge on ${edge.from}`).toBe(true)
-      // Edges are undirected, so a-b and b-a are the same edge.
-      const key = [edge.from, edge.to].sort().join('::')
-      expect(seen.has(key), `duplicate edge between ${edge.from} and ${edge.to}`).toBe(false)
-      seen.add(key)
+  it('is one connected component, so any door can reach any other', () => {
+    const neighbours = new Map<string, string[]>()
+    for (const e of graph.edges) {
+      neighbours.set(e.from, [...(neighbours.get(e.from) ?? []), e.to])
+      neighbours.set(e.to, [...(neighbours.get(e.to) ?? []), e.from])
     }
+    const first = graph.nodes.keys().next().value!
+    const seen = new Set([first])
+    const stack = [first]
+    while (stack.length) {
+      const cur = stack.pop()!
+      for (const n of neighbours.get(cur) ?? []) {
+        if (!seen.has(n)) {
+          seen.add(n)
+          stack.push(n)
+        }
+      }
+    }
+    expect(
+      seen.size,
+      `the network splits into islands — ${graph.nodes.size - seen.size} node(s) unreachable from the rest`,
+    ).toBe(graph.nodes.size)
   })
 
-  it('maps building entrances to real buildings and real nodes', () => {
+  it('maps building entrances to real buildings and real network nodes', () => {
     const buildingIds = new Set(buildings.map((b) => b.id))
-    const nodeIds = new Set(nodes.map((n) => n.id))
     for (const [buildingId, entranceIds] of Object.entries(buildingEntrances)) {
       expect(
         buildingIds.has(buildingId),
         `entrance mapped for unknown building: ${buildingId}`,
       ).toBe(true)
-      // An empty array would silently disable routing to this building rather
-      // than failing loudly — treat it as an authoring mistake.
       expect(
         entranceIds.length > 0,
         `${buildingId} has an empty entrance list; remove the key or add a door node`,
@@ -242,77 +254,51 @@ describe('campus graph', () => {
       ).toBe(true)
       for (const nodeId of entranceIds) {
         expect(
-          nodeIds.has(nodeId),
-          `entrance for ${buildingId} references missing node: ${nodeId}`,
+          graph.nodes.has(nodeId),
+          `entrance for ${buildingId} references node ${nodeId}, which is not in campus-paths.json — re-run bun run fetch-paths, or fix the id`,
         ).toBe(true)
       }
     }
   })
 
-  // A campus path graph is small: a mistyped coordinate digit (e.g.
-  // -95.2478 -> -95.2578) moves a node ~870m and would otherwise pass every
-  // check above while silently adding a huge detour to every route through
-  // it. These two checks are vacuous on the empty graph and become
-  // protective the moment real nodes are hand-typed in.
-
-  it('has edges shorter than 400m (catches a coordinate typo, not a style rule)', () => {
-    const nodeById = new Map(nodes.map((n) => [n.id, n]))
-    for (const edge of edges) {
-      const from = nodeById.get(edge.from)
-      const to = nodeById.get(edge.to)
-      if (!from || !to) continue // missing-node case is covered above
-      const length = distanceMeters(from.coordinates, to.coordinates)
-      expect(
-        length < 400,
-        `edge ${edge.from} <-> ${edge.to} is ${Math.round(length)}m long — a real campus path segment can run a couple hundred metres, but this is long enough to smell like a coordinate typo`,
-      ).toBe(true)
-    }
-  })
-
-  it('has every node within 500m of at least one building', () => {
-    for (const node of nodes) {
-      let nearest = Infinity
-      for (const building of buildings) {
-        const distance = distanceMeters(node.coordinates, building.coordinates)
-        if (distance < nearest) nearest = distance
+  it('puts every mapped entrance close to its own building', () => {
+    // A door node on the far side of campus means the id was copied from the
+    // wrong place — cheap to do, invisible until someone routes there.
+    const byId = new Map(buildings.map((b) => [b.id, b]))
+    for (const [buildingId, entranceIds] of Object.entries(buildingEntrances)) {
+      const building = byId.get(buildingId)
+      if (!building) continue
+      for (const nodeId of entranceIds) {
+        const node = graph.nodes.get(nodeId)
+        if (!node) continue
+        const metres = Math.hypot(
+          (node.coordinates[0] - building.coordinates[0]) *
+            111_320 *
+            Math.cos((building.coordinates[1] * Math.PI) / 180),
+          (node.coordinates[1] - building.coordinates[1]) * 111_320,
+        )
+        expect(
+          metres <= 200,
+          `entrance ${nodeId} for ${buildingId} is ${Math.round(metres)}m from the building — wrong node?`,
+        ).toBe(true)
       }
-      expect(
-        nearest <= 500,
-        `node ${node.id} is ${Math.round(nearest)}m from the nearest building — path nodes exist to connect buildings, so this is likely a coordinate typo`,
-      ).toBe(true)
     }
   })
 
-  // Deliberately NOT tested: full connectivity. Digitizing happens cluster by
-  // cluster, so disconnected islands are an expected intermediate state —
-  // routing between them returns null and the UI falls back to a straight line.
+  const mapped = Object.entries(buildingEntrances)
 
-  // Both ends must be digitized before this can mean anything. Using skipIf
-  // (rather than an early return) keeps an undigitized graph VISIBLE as a skip
-  // in the test output instead of a passing test that asserted nothing.
-  const wescoeEntrances = buildingEntrances['wescoe'] ?? []
-  const budigEntrances = buildingEntrances['budig'] ?? []
-
-  it.skipIf(!wescoeEntrances.length || !budigEntrances.length)(
-    'routes between two buildings that should be connected',
-    () => {
-      // Any door to any door: the buildings are on the same network if some
-      // pair connects. Keep the shortest so the distance band below is checked
-      // against the route a visitor would actually walk.
-      let route: ReturnType<typeof findRoute> = null
-      for (const from of wescoeEntrances) {
-        for (const to of budigEntrances) {
-          const candidate = findRoute({ nodes, edges }, from, to)
-          if (candidate && (!route || candidate.distanceMeters < route.distanceMeters)) {
-            route = candidate
-          }
+  it.skipIf(mapped.length < 2)('routes between the first two mapped buildings', () => {
+    const [[aId, aDoors], [bId, bDoors]] = mapped
+    let route: ReturnType<typeof findRoute> = null
+    for (const from of aDoors) {
+      for (const to of bDoors) {
+        const candidate = findRoute(graph, from, to)
+        if (candidate && (!route || candidate.distanceMeters < route.distanceMeters)) {
+          route = candidate
         }
       }
-      expect(route, 'wescoe and budig are both mapped but no path connects them').not.toBeNull()
-      // Sanity band: far enough apart to be a real walk, close enough that a
-      // wildly wrong path (e.g. routing through another district) fails here.
-      expect(route!.distanceMeters).toBeGreaterThan(50)
-      expect(route!.distanceMeters).toBeLessThan(1000)
-    },
-  )
+    }
+    expect(route, `${aId} and ${bId} are both mapped but no path connects them`).not.toBeNull()
+    expect(route!.distanceMeters).toBeGreaterThan(0)
+  })
 })

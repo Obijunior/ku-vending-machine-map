@@ -3,6 +3,7 @@ import { Component, Suspense, lazy, useEffect, useMemo, type ReactNode } from 'r
 import { useSearchParams } from 'react-router-dom'
 import { buildings } from '../data/buildings'
 import { getBuildingById, getMachinesForBuilding, getRouteToBuilding } from '../data/queries'
+import { useCampusPaths } from '../data/campusPaths'
 import type { Coordinates, UserOrigin } from '../data/types'
 
 // Both renderers are heavy (MapLibre ~800KB, three.js ~900KB) and neither is
@@ -53,11 +54,16 @@ export default function MapPane({
   const building = selectedBuildingId ? getBuildingById(selectedBuildingId) : undefined
   const inside = building !== undefined && searchParams.get('view') === 'inside'
 
+  // Only fetch the walking network once a route could actually be drawn —
+  // it is a few hundred KB and irrelevant until someone sets a starting point.
+  const wantsRoute = origin !== null && building !== undefined && !isPickingOrigin
+  const paths = useCampusPaths(wantsRoute)
+
   // Only the campus view draws routes; the indoor scene has its own geometry.
   const route = useMemo(() => {
-    if (!origin || !building || isPickingOrigin) return null
-    return getRouteToBuilding(origin.coordinates, building.id)?.path ?? null
-  }, [origin, building, isPickingOrigin])
+    if (!wantsRoute) return null
+    return getRouteToBuilding(paths, origin.coordinates, building.id)?.path ?? null
+  }, [wantsRoute, paths, origin, building])
 
   useEffect(() => {
     if (!isPickingOrigin || searchParams.get('view') !== 'inside') return
