@@ -9,12 +9,13 @@ type MapOptions = { minZoom?: number; maxBounds?: [[number, number], [number, nu
 type SourceSpec = { type: string; data: unknown }
 type FlyToCall = { center: Coordinates; zoom: number; pitch: number }
 
-const { mapOptions, sources, layers, sourceData, flyToCalls } = vi.hoisted(() => ({
+const { mapOptions, sources, layers, sourceData, flyToCalls, images } = vi.hoisted(() => ({
   mapOptions: [] as MapOptions[],
   sources: new Map<string, SourceSpec>(),
   layers: [] as { id: string; type: string }[],
   sourceData: new Map<string, unknown>(),
   flyToCalls: [] as FlyToCall[],
+  images: new Map<string, unknown>(),
 }))
 
 vi.mock('maplibre-gl', () => {
@@ -56,6 +57,12 @@ vi.mock('maplibre-gl', () => {
     addLayer(layer: { id: string; type: string }) {
       layers.push(layer)
     }
+    addImage(id: string, image: unknown) {
+      images.set(id, image)
+    }
+    hasImage(id: string) {
+      return images.has(id)
+    }
     getSource(id: string) {
       if (!sources.has(id)) return undefined
       return { setData: (data: unknown) => sourceData.set(id, data) }
@@ -86,6 +93,7 @@ describe('MapView', () => {
   beforeEach(() => {
     mapOptions.length = 0
     layers.length = 0
+    images.clear()
     sources.clear()
     sourceData.clear()
     flyToCalls.length = 0
@@ -122,6 +130,18 @@ describe('MapView', () => {
     renderMap()
     expect(sources.has('walking-route')).toBe(true)
     expect(layers.some((layer) => layer.id === 'walking-route-line')).toBe(true)
+  })
+
+  it('degrades without a canvas rather than failing to build the map', () => {
+    // jsdom has no 2D context, so the hatch image cannot be drawn here. The
+    // map must still come up with its tint, outline and label — a decorative
+    // pattern is never worth a blank map.
+    renderMap()
+    expect(images.has('unmapped-hatch')).toBe(false)
+    expect(layers.some((l) => l.id === 'ku-district-unmapped-hatch')).toBe(false)
+    expect(layers.some((l) => l.id === 'ku-district-unmapped-fill')).toBe(true)
+    expect(layers.some((l) => l.id === 'ku-district-unmapped-outline')).toBe(true)
+    expect(layers.some((l) => l.id === 'ku-district-unmapped-label')).toBe(true)
   })
 
   it('marks districts outside the covered area as not mapped yet', () => {

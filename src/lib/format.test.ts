@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatPrice, machineLabel } from './format'
-import type { VendingMachine } from '../data/types'
+import { formatPrice, groupSlots, machineLabel } from './format'
+import type { Slot, VendingMachine } from '../data/types'
 
 describe('formatPrice', () => {
   it('formats cents as dollars', () => {
@@ -36,5 +36,31 @@ describe('machineLabel', () => {
 
   it('labels a combo machine', () => {
     expect(machineLabel(machineWith({ type: 'combo' }))).toBe('Snack & drink machine')
+  })
+})
+
+describe('groupSlots', () => {
+  const slots: Slot[] = [
+    { code: 'A1', item: 'Grape Propel', priceCents: 0 },
+    { code: 'A2', item: 'Grape Propel', priceCents: 0 },
+    { code: 'A3', item: 'Grape Propel', priceCents: 0 },
+    { code: 'B1', item: 'Muscle Milk', priceCents: 0 },
+  ]
+
+  it('collapses slots with the same item into one group', () => {
+    const groups = groupSlots(slots)
+    expect(groups).toHaveLength(2)
+    expect(groups[0]).toMatchObject({ item: 'Grape Propel', codes: ['A1', 'A2', 'A3'] })
+    expect(groups[1]).toMatchObject({ item: 'Muscle Milk', codes: ['B1'] })
+  })
+
+  it('tracks the min and max price within a group', () => {
+    const mixedPriceSlots: Slot[] = [
+      { code: 'A1', item: 'Pretzels', priceCents: 125 },
+      { code: 'A2', item: 'Pretzels', priceCents: 150 },
+    ]
+    const [group] = groupSlots(mixedPriceSlots)
+    expect(group.minPriceCents).toBe(125)
+    expect(group.maxPriceCents).toBe(150)
   })
 })

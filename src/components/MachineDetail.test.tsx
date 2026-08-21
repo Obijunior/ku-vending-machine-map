@@ -30,6 +30,20 @@ vi.mock('../data/machines', () => ({
       lastUpdated: '2026-07-22',
       slots: [],
     },
+    {
+      id: 'ambler-rec-1-drink',
+      buildingId: 'wescoe',
+      type: 'drink',
+      floor: 1,
+      locationNote: '',
+      lastUpdated: '2026-08-21',
+      slots: [
+        { code: 'A1', item: 'Grape Propel', priceCents: 250 },
+        { code: 'A2', item: 'Grape Propel', priceCents: 250 },
+        { code: 'A3', item: 'Grape Propel', priceCents: 250 },
+        { code: 'B1', item: 'Muscle Milk', category: 'protein-shake', priceCents: 350 },
+      ],
+    },
   ],
 }))
 
@@ -88,6 +102,14 @@ describe('MachineDetail', () => {
     const row = screen.getByText('Hot Cheetos').closest('tr')!
     expect(row).toHaveTextContent('B2')
     expect(row).toHaveTextContent('$1.75')
+  })
+
+  it('collapses slots stocking the same item into one row', () => {
+    renderAt('/machine/ambler-rec-1-drink')
+    const row = screen.getByText('Grape Propel').closest('tr')!
+    expect(row).toHaveTextContent('A1, A2, A3')
+    expect(row).toHaveTextContent('$2.50')
+    expect(screen.getAllByText(/Grape Propel/)).toHaveLength(1)
   })
 
   it('links back to its building', () => {

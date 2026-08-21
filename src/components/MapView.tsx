@@ -43,11 +43,45 @@ function addRouteLayer(map: MaplibreMap) {
     source: ROUTE_SOURCE_ID,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': '#e8000d',
+      'line-color': '#2918c4',
       'line-width': 5,
-      'line-opacity': 0.9,
+      'line-opacity': 0.8,
     },
   })
+}
+
+const HATCH_IMAGE_ID = 'unmapped-hatch'
+
+/**
+ * A tiling diagonal-stripe image for the districts we don't cover.
+ *
+ * MapLibre has no stripe primitive — `fill-pattern` takes a registered image,
+ * so the hatch is drawn once into a canvas and handed over as raw RGBA.
+ *
+ * Returns null when there is no 2D context to draw into (jsdom in tests), and
+ * the caller then just skips the pattern rather than failing to build a map.
+ */
+function makeHatchImage(pixelRatio: number) {
+  const tile = 20 * pixelRatio
+  const canvas = document.createElement('canvas')
+  canvas.width = tile
+  canvas.height = tile
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  ctx.strokeStyle = 'rgba(107, 116, 136, 0.5)'
+  ctx.lineWidth = Math.max(1, pixelRatio * 2)
+  ctx.beginPath()
+  // Lines of constant x+y, stepped by the tile size, so the pattern meets
+  // itself seamlessly at every edge.
+  for (let offset = -tile; offset <= tile * 2; offset += tile) {
+    ctx.moveTo(offset, 0)
+    ctx.lineTo(offset - tile, tile)
+  }
+  ctx.stroke()
+
+  const { data } = ctx.getImageData(0, 0, tile, tile)
+  return { width: tile, height: tile, data: new Uint8Array(data.buffer) }
 }
 
 /** Districts the app actually covers. West campus is out of scope for now. */
@@ -74,7 +108,7 @@ function addCampusDistrictLayers(map: MaplibreMap) {
       filter: COVERED_FILTER as unknown as never,
       paint: {
         'fill-color': '#0051ba',
-        'fill-opacity': 0.05, // change to make fill darker or lighter
+        'fill-opacity': 0.03, // change to make fill darker or lighter
       },
     },
     firstLabelLayer,
@@ -86,9 +120,9 @@ function addCampusDistrictLayers(map: MaplibreMap) {
       source: KU_DISTRICTS_SOURCE_ID,
       filter: COVERED_FILTER as unknown as never,
       paint: {
-        'line-color': '#0051ba',
-        'line-width': 2.5,
-        'line-opacity': 0.8,
+        'line-color': '#111a27',
+        'line-width': 2.0,
+        'line-opacity': 0.6,
       },
     },
     firstLabelLayer,
@@ -109,6 +143,29 @@ function addCampusDistrictLayers(map: MaplibreMap) {
     },
     firstLabelLayer,
   )
+  // Diagonal hatching reads as "excluded" at a glance, in a way a flat tint
+  // does not. Layered over the tint rather than replacing it, so the district
+  // still reads as an area and not just as texture.
+  const hatch = makeHatchImage(Math.min(2, Math.round(window.devicePixelRatio || 1)))
+  if (hatch && !map.hasImage(HATCH_IMAGE_ID)) {
+    map.addImage(HATCH_IMAGE_ID, hatch, { pixelRatio: 2 })
+  }
+  if (map.hasImage(HATCH_IMAGE_ID)) {
+    map.addLayer(
+      {
+        id: 'ku-district-unmapped-hatch',
+        type: 'fill',
+        source: KU_DISTRICTS_SOURCE_ID,
+        filter: UNMAPPED_FILTER as unknown as never,
+        paint: {
+          'fill-pattern': HATCH_IMAGE_ID,
+          'fill-opacity': 0.55,
+        },
+      },
+      firstLabelLayer,
+    )
+  }
+
   map.addLayer(
     {
       id: 'ku-district-unmapped-outline',

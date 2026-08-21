@@ -7,7 +7,7 @@ import { getBuildingById, getMachinesForBuilding } from '../data/queries'
 import type { Building, Coordinates, MachineType, UserOrigin, VendingMachine } from '../data/types'
 import { formatPrice, machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
-import { search } from '../lib/search'
+import { groupItemHits, search } from '../lib/search'
 
 const MACHINE_TYPE_NAMES: Record<MachineType, string> = {
   drink: 'Drink',
@@ -149,20 +149,28 @@ export default function BuildingList({ origin = null }: Props) {
         <section>
           <h2 className="section-label">Items</h2>
           <ul className="result-list">
-            {itemResults.map(({ slot, machine, building }) => (
-              <li className="result-card" key={`${machine.id}-${slot.code}`}>
-                <Link to={`/machine/${machine.id}`} className="result-row">
-                  <span className="result-title">
-                    {slot.item} · {formatPrice(slot.priceCents)}
-                  </span>
-                  <span className="result-sub">
-                    {building.name} · Floor {machine.floor} · {machineLabel(machine)}
-                    {origin && ` · ${formatDistance(distanceMeters(origin.coordinates, machine.position ?? building.coordinates))}`}
-                  </span>
-                </Link>
-                <DirectionsLink origin={origin} destination={machine.position ?? building.coordinates} />
-              </li>
-            ))}
+            {groupItemHits(itemResults).flatMap(({ machine, building, slotGroups }, machineIndex) =>
+              slotGroups.map((group, groupIndex) => (
+                <li
+                  className={`result-card${groupIndex === 0 && machineIndex > 0 ? ' result-card--divider' : ''}`}
+                  key={`${machine.id}-${group.codes.join(',')}`}
+                >
+                  <Link to={`/machine/${machine.id}`} className="result-row">
+                    <span className="result-title">
+                      {group.item} ·{' '}
+                      {group.minPriceCents === group.maxPriceCents
+                        ? formatPrice(group.minPriceCents)
+                        : `${formatPrice(group.minPriceCents)}–${formatPrice(group.maxPriceCents)}`}
+                    </span>
+                    <span className="result-sub">
+                      {building.name} · Floor {machine.floor} · {machineLabel(machine)}
+                      {origin && ` · ${formatDistance(distanceMeters(origin.coordinates, machine.position ?? building.coordinates))}`}
+                    </span>
+                  </Link>
+                  <DirectionsLink origin={origin} destination={machine.position ?? building.coordinates} />
+                </li>
+              )),
+            )}
           </ul>
         </section>
       )}

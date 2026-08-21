@@ -35,6 +35,27 @@ vi.mock('../data/machines', () => ({
       lastUpdated: '2026-06-11',
       slots: [],
     },
+    {
+      id: 'ambler-rec-1-drink',
+      buildingId: 'ambler-rec',
+      type: 'drink',
+      floor: 1,
+      locationNote: '',
+      lastUpdated: '2026-08-21',
+      slots: [
+        { code: 'A1', item: 'Grape Propel', priceCents: 250 },
+        { code: 'A2', item: 'Grape Propel', priceCents: 250 },
+      ],
+    },
+    {
+      id: 'ambler-rec-2-drink',
+      buildingId: 'ambler-rec',
+      type: 'drink',
+      floor: 1,
+      locationNote: '',
+      lastUpdated: '2026-08-21',
+      slots: [{ code: 'A1', item: 'Grape Propel', priceCents: 250 }],
+    },
   ],
 }))
 
@@ -84,6 +105,20 @@ describe('BuildingList', () => {
     renderList()
     await user.type(screen.getByRole('searchbox'), 'anschutz')
     expect(screen.getByRole('link', { name: /Anschutz Library/ })).toBeInTheDocument()
+  })
+
+  it('collapses duplicate item hits within a machine and adds dividers between machines', async () => {
+    const user = userEvent.setup()
+    renderList()
+    await user.type(screen.getByRole('searchbox'), 'grape propel')
+    const hits = screen.getAllByRole('link', { name: /Grape Propel/ })
+    // Two machines each stock Grape Propel; ambler-rec-1-drink stocks it twice
+    // but should collapse to a single hit.
+    expect(hits).toHaveLength(2)
+    const secondHitCard = hits[1].closest('li')!
+    expect(secondHitCard).toHaveClass('result-card--divider')
+    const firstHitCard = hits[0].closest('li')!
+    expect(firstHitCard).not.toHaveClass('result-card--divider')
   })
 
   it('shows a message when nothing matches', async () => {

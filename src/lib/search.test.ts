@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { search } from './search'
+import { groupItemHits, search } from './search'
 import type { Building, VendingMachine } from '../data/types'
 
 // Fixtures, not the real data files: this suite tests matching logic, and
@@ -74,9 +74,58 @@ describe('search', () => {
     expect(machineIds).toContain('kansas-union-1-drink')
   })
 
+  it('matches slot items by category label', () => {
+    const machinesWithCategory: VendingMachine[] = [
+      {
+        id: 'ambler-rec-1-drink',
+        buildingId: 'wescoe',
+        type: 'drink',
+        floor: 1,
+        locationNote: '',
+        lastUpdated: '2026-08-21',
+        slots: [{ code: 'B1', item: 'Muscle Milk', category: 'protein-shake', priceCents: 0 }],
+      },
+    ]
+    const results = search('protein shake', testBuildings, machinesWithCategory)
+    expect(results.items).toHaveLength(1)
+    expect(results.items[0].slot.item).toBe('Muscle Milk')
+  })
+
   it('returns nothing for a query with no matches', () => {
     const results = search('zzzz', testBuildings, testMachines)
     expect(results.buildings).toEqual([])
     expect(results.items).toEqual([])
+  })
+})
+
+describe('groupItemHits', () => {
+  it('collapses hits from the same machine that stock the same item', () => {
+    const results = search('pepsi', testBuildings, testMachines)
+    const groups = groupItemHits(results.items)
+    expect(groups).toHaveLength(2)
+    expect(groups.map((g) => g.machine.id)).toEqual(['wescoe-2-drink', 'kansas-union-1-drink'])
+    expect(groups[0].slotGroups).toHaveLength(1)
+    expect(groups[0].slotGroups[0]).toMatchObject({ item: 'Pepsi', codes: ['1'] })
+  })
+
+  it('collapses duplicate slots of the same item within one machine into one group', () => {
+    const propelMachine: VendingMachine = {
+      id: 'ambler-rec-1-drink',
+      buildingId: 'wescoe',
+      type: 'drink',
+      floor: 1,
+      locationNote: '',
+      lastUpdated: '2026-08-21',
+      slots: [
+        { code: 'A1', item: 'Grape Propel', priceCents: 250 },
+        { code: 'A2', item: 'Grape Propel', priceCents: 250 },
+        { code: 'A3', item: 'Grape Propel', priceCents: 250 },
+      ],
+    }
+    const results = search('propel', testBuildings, [propelMachine])
+    const groups = groupItemHits(results.items)
+    expect(groups).toHaveLength(1)
+    expect(groups[0].slotGroups).toHaveLength(1)
+    expect(groups[0].slotGroups[0].codes).toEqual(['A1', 'A2', 'A3'])
   })
 })

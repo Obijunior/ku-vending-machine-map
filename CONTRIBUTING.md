@@ -113,8 +113,9 @@ Add each surveyed item to the machine's `slots` array:
 
 ```ts
 slots: [
-  { code: 'A1', item: 'Pretzels', priceCents: 125 },
-  { code: 'A2', item: 'Hot Cheetos', priceCents: 175 },
+  { code: 'A1', item: 'Pretzels', category: 'chips', priceCents: 125 },
+  { code: 'A2', item: 'Hot Cheetos', category: 'chips', priceCents: 175 },
+  { code: 'B1', item: 'Celsius Sparkling Orange', category: 'energy-drink', priceCents: 275 },
 ]
 ```
 
@@ -123,6 +124,11 @@ Inventory fields follow these rules:
 - `code` must match the code printed on the machine and be unique within that
   machine.
 - `item` should match the product label without adding availability claims.
+- `category` is optional and must be one of `soda`, `energy-drink`,
+  `electrolyte-drink`, `protein-shake`, `water`, `gum`, `candy`, `chips`, or
+  `other`. It powers filtering by item type, so prefer the closest matching
+  category over `other` when one applies. Add a new category to `SlotCategory`
+  in `src/data/types.ts` if none of the existing ones fit.
 - `priceCents` must be a positive integer number of cents; for example, `$1.75`
   is `175`.
 

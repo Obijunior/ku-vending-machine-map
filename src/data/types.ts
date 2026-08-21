@@ -19,10 +19,22 @@ export type Building = {
 
 export type MachineType = 'drink' | 'snack' | 'combo'
 
+export type SlotCategory =
+  | 'soda'
+  | 'energy-drink'
+  | 'electrolyte-drink'
+  | 'protein-shake'
+  | 'water'
+  | 'gum'
+  | 'candy'
+  | 'chips'
+  | 'other'
+
 export type Slot = {
   /** Slot code as printed on the machine, e.g. "A1" */
   code: string
   item: string
+  category?: SlotCategory
   /** Integer cents, e.g. 175 = $1.75 */
   priceCents: number
 }
