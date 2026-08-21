@@ -93,9 +93,12 @@ describe('machines', () => {
     }
   })
 
-  it('have positive integer prices', () => {
+  it('have positive integer prices when explicitly set', () => {
+    // priceCents is optional — an omitted slot falls back to the campus-wide
+    // default in itemPrices.ts — but an explicit override still has to be real money.
     for (const machine of machines) {
       for (const slot of machine.slots) {
+        if (slot.priceCents === undefined) continue
         expect(
           Number.isInteger(slot.priceCents) && slot.priceCents > 0,
           `bad price for ${machine.id} slot ${slot.code}: ${slot.priceCents}`,

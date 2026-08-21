@@ -37,6 +37,7 @@ Application data is maintained in:
 
 - `src/data/buildings.ts` for buildings, coordinates, and KU GIS identifiers
 - `src/data/machines.ts` for machines, locations, and inventory
+- `src/data/itemPrices.ts` for campus-wide default prices by item name
 - `src/data/campusGraph.ts` for the hand-authored map of building entrances
 - `public/data/campus-paths.json` for the generated OpenStreetMap walking network
 - `src/data/footprints.ts` for generated OpenStreetMap building footprints
@@ -115,7 +116,7 @@ Add each surveyed item to the machine's `slots` array:
 slots: [
   { code: 'A1', item: 'Pretzels', category: 'chips', priceCents: 125 },
   { code: 'A2', item: 'Hot Cheetos', category: 'chips', priceCents: 175 },
-  { code: 'B1', item: 'Celsius Sparkling Orange', category: 'energy-drink', priceCents: 275 },
+  { code: 'B1', item: 'Celsius', flavor: 'Sparkling Orange', category: 'energy-drink' },
 ]
 ```
 
@@ -123,17 +124,43 @@ Inventory fields follow these rules:
 
 - `code` must match the code printed on the machine and be unique within that
   machine.
-- `item` should match the product label without adding availability claims.
+- `item` should be the brand/product name without a flavor, e.g. `Celsius` or
+  `Gatorade`, so slots of the same product only differ by `flavor` and share
+  one entry in `itemPrices.ts`.
+- `flavor` is optional. Add it when a product comes in multiple flavors and
+  you want that distinction kept, e.g. `Sparkling Orange`. Slots with the same
+  `item` but a different `flavor` are shown and searched as distinct, but
+  still price from the same `itemPrices.ts` entry, since flavor doesn't affect
+  price. Omit it for single-flavor items or when the flavor isn't worth
+  tracking.
 - `category` is optional and must be one of `soda`, `energy-drink`,
   `electrolyte-drink`, `protein-shake`, `water`, `gum`, `candy`, `chips`, or
   `other`. It powers filtering by item type, so prefer the closest matching
   category over `other` when one applies. Add a new category to `SlotCategory`
   in `src/data/types.ts` if none of the existing ones fit.
-- `priceCents` must be a positive integer number of cents; for example, `$1.75`
-  is `175`.
+- `priceCents` is optional. Omit it to use the campus-wide default for that
+  item from `src/data/itemPrices.ts`; set it only to override that default for
+  this specific slot. When set, it must be a positive integer number of
+  cents; for example, `$1.75` is `175`.
 
 Use `slots: []` when inventory has not been surveyed. Do not invent products or
 prices to make an entry look complete.
+
+### Setting a campus-wide default price
+
+If the same item is priced the same way across machines, add it once to
+`src/data/itemPrices.ts` instead of repeating `priceCents` on every slot:
+
+```ts
+export const itemPrices: Record<string, number> = {
+  'Celsius Sparkling Orange': 350,
+}
+```
+
+Matching against a slot's `item` is case- and punctuation-insensitive, but
+word order still has to match, so keep the key identical to how the item is
+named in `machines.ts`. Any slot that sets its own `priceCents` overrides this
+default; a slot with neither shows as unpriced rather than guessing.
 
 ### Adding walking paths
 

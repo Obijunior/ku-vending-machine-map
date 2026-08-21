@@ -34,9 +34,19 @@ export type Slot = {
   /** Slot code as printed on the machine, e.g. "A1" */
   code: string
   item: string
+  /**
+   * Variant of the item, e.g. "Sparkling Orange" for Celsius. Optional and
+   * kept separate from `item` because price and the global default in
+   * `itemPrices.ts` are keyed by `item` alone — flavor doesn't affect price.
+   */
+  flavor?: string
   category?: SlotCategory
-  /** Integer cents, e.g. 175 = $1.75 */
-  priceCents: number
+  /**
+   * Integer cents, e.g. 175 = $1.75. Omit to use the campus-wide default for
+   * this item from `src/data/itemPrices.ts`; set it to override that default
+   * for this specific slot.
+   */
+  priceCents?: number
 }
 
 export type VendingMachine = {

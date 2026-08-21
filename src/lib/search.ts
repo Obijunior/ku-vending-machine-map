@@ -54,7 +54,8 @@ export function search(
     if (!building) continue
     for (const slot of machine.slots) {
       const categoryMatch = slot.category ? CATEGORY_LABELS[slot.category].toLowerCase().includes(q) : false
-      if (slot.item.toLowerCase().includes(q) || categoryMatch) {
+      const flavorMatch = slot.flavor ? slot.flavor.toLowerCase().includes(q) : false
+      if (slot.item.toLowerCase().includes(q) || categoryMatch || flavorMatch) {
         items.push({ slot, machine, building })
       }
     }

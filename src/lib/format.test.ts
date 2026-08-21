@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPrice, formatSlotCodes, groupSlots, machineLabel } from './format'
+import { formatPrice, formatSlotCodes, groupSlots, itemLabel, machineLabel } from './format'
 import type { Slot, VendingMachine } from '../data/types'
 
 describe('formatPrice', () => {
@@ -13,6 +13,10 @@ describe('formatPrice', () => {
 
   it('handles amounts over ten dollars', () => {
     expect(formatPrice(1050)).toBe('$10.50')
+  })
+
+  it('shows a dash for an unresolved price', () => {
+    expect(formatPrice(null)).toBe('—')
   })
 })
 
@@ -62,6 +66,35 @@ describe('groupSlots', () => {
     const [group] = groupSlots(mixedPriceSlots)
     expect(group.minPriceCents).toBe(125)
     expect(group.maxPriceCents).toBe(150)
+  })
+
+  it('resolves price to null when a slot has no override and no global default', () => {
+    const unpricedSlots: Slot[] = [{ code: 'A1', item: 'Some Unpriced Snack' }]
+    const [group] = groupSlots(unpricedSlots)
+    expect(group.minPriceCents).toBeNull()
+    expect(group.maxPriceCents).toBeNull()
+  })
+
+  it('keeps different flavors of the same item as separate groups', () => {
+    const flavoredSlots: Slot[] = [
+      { code: 'A4', item: 'Celsius', flavor: 'Sparkling Orange', priceCents: 350 },
+      { code: 'A5', item: 'Celsius', flavor: 'Sparkling Orange', priceCents: 350 },
+      { code: 'A6', item: 'Celsius', flavor: 'Kiwi Guava', priceCents: 350 },
+    ]
+    const groups = groupSlots(flavoredSlots)
+    expect(groups).toHaveLength(2)
+    expect(groups[0]).toMatchObject({ item: 'Celsius', flavor: 'Sparkling Orange', codes: ['A4', 'A5'] })
+    expect(groups[1]).toMatchObject({ item: 'Celsius', flavor: 'Kiwi Guava', codes: ['A6'] })
+  })
+})
+
+describe('itemLabel', () => {
+  it('returns just the item name when there is no flavor', () => {
+    expect(itemLabel({ item: 'Celsius' })).toBe('Celsius')
+  })
+
+  it('appends the flavor when set', () => {
+    expect(itemLabel({ item: 'Celsius', flavor: 'Sparkling Orange' })).toBe('Celsius · Sparkling Orange')
   })
 })
 

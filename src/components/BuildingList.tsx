@@ -5,7 +5,7 @@ import { buildings } from '../data/buildings'
 import { machines } from '../data/machines'
 import { getBuildingById, getMachinesForBuilding } from '../data/queries'
 import type { Building, Coordinates, MachineType, UserOrigin, VendingMachine } from '../data/types'
-import { formatPrice, machineLabel } from '../lib/format'
+import { formatPrice, itemLabel, machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
 import { groupItemHits, search } from '../lib/search'
 
@@ -157,7 +157,7 @@ export default function BuildingList({ origin = null }: Props) {
                 >
                   <Link to={`/machine/${machine.id}`} className="result-row">
                     <span className="result-title">
-                      {group.item} ·{' '}
+                      {itemLabel(group)} ·{' '}
                       {group.minPriceCents === group.maxPriceCents
                         ? formatPrice(group.minPriceCents)
                         : `${formatPrice(group.minPriceCents)}–${formatPrice(group.maxPriceCents)}`}

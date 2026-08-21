@@ -91,6 +91,23 @@ describe('search', () => {
     expect(results.items[0].slot.item).toBe('Muscle Milk')
   })
 
+  it('matches slot items by flavor', () => {
+    const machinesWithFlavor: VendingMachine[] = [
+      {
+        id: 'ambler-rec-1-drink',
+        buildingId: 'wescoe',
+        type: 'drink',
+        floor: 1,
+        locationNote: '',
+        lastUpdated: '2026-08-21',
+        slots: [{ code: 'A4', item: 'Celsius', flavor: 'Sparkling Orange', priceCents: 350 }],
+      },
+    ]
+    const results = search('sparkling orange', testBuildings, machinesWithFlavor)
+    expect(results.items).toHaveLength(1)
+    expect(results.items[0].slot.item).toBe('Celsius')
+  })
+
   it('returns nothing for a query with no matches', () => {
     const results = search('zzzz', testBuildings, testMachines)
     expect(results.buildings).toEqual([])
