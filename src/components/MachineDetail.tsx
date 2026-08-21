@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getBuildingById, getMachineById, getRouteToBuilding } from '../data/queries'
 import { useCampusPaths } from '../data/campusPaths'
 import type { UserOrigin } from '../data/types'
-import { formatPrice, groupSlots, machineLabel } from '../lib/format'
+import { formatPrice, formatSlotCodes, groupSlots, machineLabel } from '../lib/format'
 import { distanceMeters, formatDistance, walkingDirectionsUrl } from '../lib/location'
 import NotFound from './NotFound'
 
@@ -64,7 +64,7 @@ export default function MachineDetail({ origin = null }: Props) {
           <tbody>
             {groupSlots(machine.slots).map((group) => (
               <tr key={group.codes.join(',')}>
-                <td className="slot-code">{group.codes.join(', ')}</td>
+                <td className="slot-code">{formatSlotCodes(group.codes)}</td>
                 <td>{group.item}</td>
                 <td className="slot-price">
                   {group.minPriceCents === group.maxPriceCents

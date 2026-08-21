@@ -107,7 +107,7 @@ describe('MachineDetail', () => {
   it('collapses slots stocking the same item into one row', () => {
     renderAt('/machine/ambler-rec-1-drink')
     const row = screen.getByText('Grape Propel').closest('tr')!
-    expect(row).toHaveTextContent('A1, A2, A3')
+    expect(row).toHaveTextContent('A1–A3')
     expect(row).toHaveTextContent('$2.50')
     expect(screen.getAllByText(/Grape Propel/)).toHaveLength(1)
   })

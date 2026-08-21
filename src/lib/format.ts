@@ -50,3 +50,33 @@ export function groupSlots(slots: Slot[]): SlotGroup[] {
   }
   return groups
 }
+
+type ParsedCode = { raw: string; prefix: string; num: number } | { raw: string; prefix: null; num: null }
+
+function parseCode(raw: string): ParsedCode {
+  const match = /^([A-Za-z]*)(\d+)$/.exec(raw)
+  if (!match) return { raw, prefix: null, num: null }
+  return { raw, prefix: match[1], num: Number(match[2]) }
+}
+
+/** Formats slot codes as ranges, e.g. ["C1".."C7", "D1".."D7"] -> "C1–C7, D1–D7". */
+export function formatSlotCodes(codes: string[]): string {
+  const parsed = codes.map(parseCode)
+  const parts: string[] = []
+  let i = 0
+  while (i < parsed.length) {
+    const start = parsed[i]
+    let j = i
+    while (
+      j + 1 < parsed.length &&
+      start.prefix !== null &&
+      parsed[j + 1].prefix === start.prefix &&
+      parsed[j + 1].num === parsed[j].num! + 1
+    ) {
+      j++
+    }
+    parts.push(j > i ? `${start.raw}–${parsed[j].raw}` : start.raw)
+    i = j + 1
+  }
+  return parts.join(', ')
+}
