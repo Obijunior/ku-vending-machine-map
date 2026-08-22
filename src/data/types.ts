@@ -34,11 +34,6 @@ export type Slot = {
   /** Slot code as printed on the machine, e.g. "A1" */
   code: string
   item: string
-  /**
-   * Variant of the item, e.g. "Sparkling Orange" for Celsius. Optional and
-   * kept separate from `item` because price and the global default in
-   * `itemPrices.ts` are keyed by `item` alone — flavor doesn't affect price.
-   */
   flavor?: string
   category?: SlotCategory
   /**
