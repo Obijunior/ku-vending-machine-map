@@ -7,9 +7,11 @@ import type { Slot } from './types'
  * Matching is case- and punctuation-insensitive, but word order still has to
  * match — "Celsius Sparkling Orange" will not match "Orange Celsius Sparkling".
  */
-export const itemPrices: Record<string, number> = {
+export const itemPrices: Record<string, number> = { // bottled stuff is $2
   'Celsius': 350,
-  'Gatorade': 0,
+  'Gatorade': 250,
+  'Gatorade Zero': 250,
+  'Rockstar': 275,
 }
 
 export function normalizeItemName(item: string): string {
