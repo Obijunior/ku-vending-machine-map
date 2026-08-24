@@ -78,6 +78,13 @@ export const machines: VendingMachine[] = [
     lastUpdated: '2026-08-24',
     slots: [
       ...slotRange('A1', 'A3', {item: 'Propel', category: 'electrolyte-drink', flavor: 'Grape'}),
+      ...slotRange('A4', 'A5', {item: 'Cran-Grape Juice', category: 'juice', flavor: 'Grape'}),
+      ...slotRange('A6', 'A7', {item: 'Pure Leaf', category: 'tea', flavor: 'Sweet Tea'}),
+      ...slotRange('A8', 'A9', {item: 'Pure Leaf', category: 'tea', flavor: 'Unsweetened'}),
+      ...slotRange('B1', 'B3', {item: 'Starbucks Frappuccino', category: 'coffee', flavor: 'Mocha'}),
+      ...slotRange('B4', 'B5', {item: 'Starbucks Frappuccino', category: 'coffee', flavor: 'Vanilla'}),
+      ...slotRange('B6', 'B7', {item: 'Starbucks Doubleshot Energy', category: 'coffee', flavor: 'Vanilla'}),
+      ...slotRange('B8', 'B9', {item: 'Starbucks Doubleshot Energy', category: 'coffee', flavor: 'Mocha'}),
       ...slotRange('C1', 'C3', {item: 'Celsius', category: 'energy-drink', flavor: 'Sparkling Orange'}),
       ...slotRange('C4', 'C5', {item: 'Celsius', category: 'energy-drink', flavor: 'Kiwi Guava'}),
       ...slotRange('C6', 'C7', {item: 'Rockstar', category: 'energy-drink', flavor: 'Fruit Punched'}),
@@ -86,6 +93,7 @@ export const machines: VendingMachine[] = [
       ...slotRange('E1', 'E7', {item: 'Aquafina', category: 'water'}),
       ...slotRange('E8', 'E9', {item: 'Life Wtr', category: 'water'}),
     ], 
+    position: [-95.25365, 38.95778],
   },
   {
     id: 'leep2-3-snack',
@@ -162,6 +170,6 @@ export const machines: VendingMachine[] = [
       ...slotRange('A8', 'A9', {item: 'Rockstar', category: 'energy-drink', flavor: 'Lemonade'}),
       ...slotRange('B1', 'B9', {item: 'Bottled Pepsi', category: 'soda'}),
     ],
-    // position: '',
+    position: [-95.25273, 38.95796],
   },
 ]

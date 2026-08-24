@@ -28,6 +28,9 @@ export type SlotCategory =
   | 'gum'
   | 'candy'
   | 'chips'
+  | 'juice'
+  | 'tea'
+  | 'coffee'
   | 'other'
 
 export type Slot = {
