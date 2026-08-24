@@ -146,6 +146,23 @@ Inventory fields follow these rules:
 Use `slots: []` when inventory has not been surveyed. Do not invent products or
 prices to make an entry look complete.
 
+When several consecutive slots stock the same thing, e.g. `B1`-`B9` all
+holding Pepsi, use `slotRange()` instead of listing each one:
+
+```ts
+import { slotRange } from './slotRange'
+
+slots: [
+  ...slotRange('B1', 'B9', { item: 'Pepsi', category: 'soda' }),
+  { code: 'C1', item: 'Diet Pepsi', category: 'soda' },
+]
+```
+
+It expands to the same array of individual slots as typing them out, so it
+mixes freely with regular entries. The two codes must share a letter prefix
+and the second must not come before the first; `slotRange` throws immediately
+on import if they don't, so a typo fails loudly instead of producing wrong data.
+
 ### Setting a campus-wide default price
 
 If the same item is priced the same way across machines, add it once to

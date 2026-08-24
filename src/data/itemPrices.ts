@@ -12,6 +12,10 @@ export const itemPrices: Record<string, number> = { // bottled stuff is $2
   'Gatorade': 250,
   'Gatorade Zero': 250,
   'Rockstar': 275,
+  'Aquafina': 200,
+  'Propel': 250,
+  'Life Wtr': 275,
+  'Bottled Pepsi': 200,
 }
 
 export function normalizeItemName(item: string): string {
