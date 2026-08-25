@@ -10,8 +10,12 @@ import type { Slot } from './types'
 export const itemPrices: Record<string, number> = { // bottled stuff is $2
   'Celsius': 350,
   'Rockstar': 275,
+  'Mountain Dew Kickstart': 300,
+  'Doubleshot Energy': 350,
+  'Starbucks Frappuccino': 350,
   'Gatorade': 250,
   'Gatorade Zero': 250,
+  'Pure Leaf': 250,
   'Aquafina': 200,
   'Life Wtr': 275,
   'Propel': 250,
