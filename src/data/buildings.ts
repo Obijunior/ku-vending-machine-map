@@ -15,7 +15,7 @@ export const buildings: Building[] = [
   { id: 'slawson', name: 'Slawson Hall', coordinates: [-95.25178839472429, 38.95756440933736], gisLocationId: '244', floors: [1] },
   { id: 'burge-union', name: 'Burge Union', coordinates: [-95.254879089599, 38.95516935200369], gisLocationId: '250A', floors: [1] },
   { id: 'gray-little', name: 'Gray-Little Hall', coordinates: [-95.25548715495076, 38.95558500179917], gisLocationId: '250', floors: [1] },
-  { id: 'ambler-rec', name: 'Ambler Student Recreation Fitness Center', coordinates: [-95.2479293, 38.9525116], gisLocationId: '205', floors: [1] },
+  { id: 'ambler-rec', name: 'Ambler Student Recreation Fitness Center', coordinates: [-95.2479293, 38.9525116], gisLocationId: '205', floors: [-1, 1, 2] },
   { id: 'cap-fed', name: 'Capitol Federal Hall', coordinates: [-95.24999, 38.953835], gisLocationId: '234', floors: [1, 2, 3, 4] },
   // Added for campus walking routes. Coordinates are area-weighted centroids of
   // the KU GIS layer-1 building polygons; floors are the numeric levels present
