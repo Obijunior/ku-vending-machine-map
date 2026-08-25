@@ -9,13 +9,17 @@ import type { Slot } from './types'
  */
 export const itemPrices: Record<string, number> = { // bottled stuff is $2
   'Celsius': 350,
+  'Rockstar': 275,
   'Gatorade': 250,
   'Gatorade Zero': 250,
-  'Rockstar': 275,
   'Aquafina': 200,
-  'Propel': 250,
   'Life Wtr': 275,
+  'Propel': 250,
   'Bottled Pepsi': 200,
+  'Bottled Dr. Pepper': 200,
+  'Bottled Mountain Dew': 200,
+  'Bottled Dole Lemonade': 200,
+  'Bottled Starry': 200,
 }
 
 export function normalizeItemName(item: string): string {
