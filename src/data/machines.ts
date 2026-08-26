@@ -1,4 +1,4 @@
-import { slotRange } from './slotRange'
+import { slotRange, snackRow } from './slotRange'
 import type { VendingMachine } from './types'
 
 // Inventory is placeholder data until each machine is surveyed in person.
@@ -70,7 +70,7 @@ export const machines: VendingMachine[] = [
     slots: [
       ...slotRange('A1', 'A9', {item: 'Life Wtr', category: 'water'}),
       ...slotRange('B1', 'B3', {item: 'Starbucks Cold Brew', category: 'coffee', flavor: 'Chocolate Cream'}),
-      ...slotRange('B4', 'B6', {item: 'Alani', category: 'energy-drink'}),
+      ...slotRange('B4', 'B6', {item: 'Alani', category: 'energy-drink', flavor: 'Pink Slush'}),
       ...slotRange('B7', 'B9', {item: 'Starbucks Cold Brew', category: 'coffee', flavor: 'Vanilla Sweet Cream'}),
       ...slotRange('C1', 'C3', {item: 'Doubleshot Energy', category: 'coffee', flavor: 'Mocha'}),
       ...slotRange('C4', 'C6', {item: 'Doubleshot Energy', category: 'coffee', flavor: 'Vanilla'}),
@@ -87,8 +87,63 @@ export const machines: VendingMachine[] = [
     type: 'snack',
     floor: 1,
     locationNote: 'Area by Burns-Mac lounge',
-    lastUpdated: '2026-06-11',
-    slots: [], 
+    lastUpdated: '2026-08-25',
+    // Some slots omitted where the photo was too glare-obscured to read reliably: 116, 128,
+    // 134, 136, 138, 146, 148, 151, 154, 155, 157, 158, 164, 166, 168.
+    // 144 (Claim Jumper cookie) cross-referenced from the clearer eaton-snack-1 photo, which
+    // shows the same $3.00 item.
+    slots: [
+      ...snackRow(11, [
+        { item: 'Cheetos', flavor: 'Crunchy', category: 'chips', priceCents: 250 },
+        { item: 'Doritos', flavor: 'Nacho Cheese', category: 'chips', priceCents: 250 },
+        { item: "Lay's", flavor: 'Classic', category: 'chips', priceCents: 250 },
+        null,
+        { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips', priceCents: 250 },
+      ]),
+      ...snackRow(12, [
+        { item: 'Fritos', flavor: 'Chili Cheese', category: 'chips', priceCents: 250 },
+        { item: 'Ruffles', flavor: 'Cheddar & Sour Cream', category: 'chips', priceCents: 250 },
+        { item: "T.G.I. Friday's Potato Skins", flavor: 'Cheddar & Bacon', category: 'chips', priceCents: 275 },
+        { item: 'Doritos', flavor: 'Cool Ranch', category: 'chips', priceCents: 250 },
+        null,
+      ]),
+      ...snackRow(13, [
+        { item: 'Chex Mix Muddy Buddies', flavor: 'Peanut Butter Chocolate', category: 'other', priceCents: 275 },
+        { item: "Jack Link's Beef Tender Bites", flavor: 'Original', category: 'other', priceCents: 300 },
+        null,
+        null,
+        null,
+      ]),
+      ...snackRow(14, [
+        { item: 'Rice Krispies Treats', flavor: 'Original', category: 'other', priceCents: 275 },
+        { item: 'Pop-Tarts', flavor: 'Strawberry', category: 'other', priceCents: 275 },
+        { item: 'Claim Jumper', category: 'other', priceCents: 300 },
+        null,
+        null,
+      ]),
+      ...snackRow(
+        15,
+        [
+          { item: "Reese's", category: 'candy', priceCents: 250 },
+          null,
+          { item: "Reese's Sticks", category: 'candy' },
+          { item: 'Butterfinger', category: 'candy', priceCents: 250 },
+          null,
+          null,
+          { item: "Reese's Outrageous", category: 'candy', priceCents: 250 },
+          null,
+          null,
+        ],
+        1,
+      ),
+      ...snackRow(16, [
+        { item: "Grandma's", flavor: 'Peanut Butter', category: 'other', priceCents: 275 },
+        { item: "Grandma's", flavor: 'Chocolate Brownie', category: 'other', priceCents: 275 },
+        null,
+        null,
+        null,
+      ]),
+    ],
   },
   {
     id: 'leep2-2-drink',
@@ -122,8 +177,64 @@ export const machines: VendingMachine[] = [
     type: 'snack',
     floor: 1,
     locationNote: 'Area by Burns-Mac lounge',
-    lastUpdated: '2026-06-11',
-    slots: [], 
+    lastUpdated: '2026-08-25',
+    // Some slots omitted where the photo was too glare-obscured to read reliably: 124, 148,
+    // 157, 158, 164.
+    // 146, 153, and 159 cross-referenced from the clearer eaton-snack-1 photo: same $3.00
+    // cookie at 146, and the same Snickers-PayDay-Bueno-...-M&M's-Nature Valley run at 153/159.
+    slots: [
+      ...snackRow(11, [
+        { item: "Lay's", flavor: 'Classic', category: 'chips', priceCents: 250 },
+        { item: 'Doritos', flavor: 'Nacho Cheese', category: 'chips', priceCents: 250 },
+        { item: 'Ruffles', flavor: 'Cheddar & Sour Cream', category: 'chips', priceCents: 250 },
+        { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips', priceCents: 250 },
+        { item: 'Ruffles', flavor: 'Baked', category: 'chips', priceCents: 250 },
+      ]),
+      ...snackRow(12, [
+        { item: 'Fritos', flavor: 'Chili Cheese', category: 'chips', priceCents: 250 },
+        { item: 'Cheetos', flavor: "Flamin' Hot Crunchy", category: 'chips', priceCents: 250 },
+        null,
+        { item: "Snyder's of Hanover", flavor: 'Mini Pretzels', category: 'chips', priceCents: 250 },
+        { item: 'Munchies', flavor: 'Cheese Fix', category: 'chips', priceCents: 250 },
+      ]),
+      ...snackRow(13, [
+        { item: 'Cheez-It', flavor: 'Original', category: 'chips', priceCents: 275 },
+        { item: "Gardetto's", flavor: 'Original Recipe', category: 'chips', priceCents: 275 },
+        { item: 'Ritz Toasted Chips', flavor: 'Sour Cream', category: 'chips', priceCents: 275 },
+        { item: "Jack Link's Beef Tender Bites", flavor: 'Original', category: 'other', priceCents: 300 },
+        { item: 'Veggie Toasted Chips', category: 'chips', priceCents: 275 },
+      ]),
+      ...snackRow(14, [
+        { item: "Mrs. Freshley's Grand Iced Honey Bun", category: 'other', priceCents: 300 },
+        { item: "Mrs. Freshley's Mini Donuts", flavor: 'Frosted', category: 'other', priceCents: 300 },
+        { item: 'Haribo Goldbears', category: 'candy', priceCents: 300 },
+        { item: 'Claim Jumper', category: 'other', priceCents: 300 },
+        null,
+      ]),
+      ...snackRow(
+        15,
+        [
+          { item: "Reese's", category: 'candy', priceCents: 250 },
+          { item: 'Kit Kat', category: 'candy', priceCents: 250 },
+          { item: 'Snickers', category: 'candy', priceCents: 250 },
+          { item: 'PayDay', category: 'candy', priceCents: 250 },
+          { item: 'Kinder Bueno', category: 'candy', priceCents: 250 },
+          { item: 'Butterfinger', category: 'candy', priceCents: 250 },
+          { item: "M&M's", category: 'candy', priceCents: 250 },
+          null,
+          null,
+          { item: 'Nature Valley Crunchy', category: 'other', priceCents: 250 },
+        ],
+        1,
+      ),
+      ...snackRow(16, [
+        { item: "Grandma's", flavor: 'Vanilla Creme', category: 'other', priceCents: 275 },
+        { item: "Grandma's", flavor: 'Chocolate Brownie', category: 'other', priceCents: 275 },
+        null,
+        { item: 'Chips Ahoy', flavor: 'Mini', category: 'candy', priceCents: 250 },
+        { item: 'Rice Krispies Treats', flavor: 'Original', category: 'other', priceCents: 275 },
+      ]),
+    ],
   },
   {
     id: 'ambler-rec-1-drink',
@@ -229,5 +340,43 @@ export const machines: VendingMachine[] = [
       ...slotRange('E8', 'E9', {item: 'Life Wtr', category: 'water'}),
     ],
     position: [-95.25273, 38.95796],
-},
+  },
+  {
+    id: 'eaton-snack-1',
+    buildingId: 'eaton',
+    type: 'snack',
+    floor: 1,
+    locationNote: 'Across from fishbowl',
+    lastUpdated: '2026-08-25',
+    // Photo only captured the middle 3 columns of each row and cut off before the candy-bar
+    // and cookie shelves' own price labels, so slots 110/120/130/140/150+/160+ and 118+ are
+    // not catalogued yet. 112 and 146 skipped: visible but unclear from glare/wrapper angle.
+    slots: [
+      ...snackRow(11, [
+        null,
+        null,
+        { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips', priceCents: 250 },
+        { item: 'Ruffles', flavor: 'Baked', category: 'chips', priceCents: 250 },
+      ]),
+      ...snackRow(12, [
+        null,
+        { item: 'Cheetos', flavor: 'Crunchy', category: 'chips', priceCents: 250 },
+        { item: "Snyder's of Hanover", flavor: 'Mini Pretzels', category: 'chips', priceCents: 250 },
+        { item: 'Munchies', flavor: 'Cheese Fix', category: 'chips', priceCents: 250 },
+      ]),
+      ...snackRow(13, [
+        null,
+        { item: "Gardetto's", flavor: 'Original Recipe', category: 'chips', priceCents: 275 },
+        { item: "Jack Link's Beef Tender Bites", flavor: 'Original', category: 'other', priceCents: 300 },
+        { item: 'Veggie Toasted Chips', category: 'chips', priceCents: 275 },
+      ]),
+      ...snackRow(14, [
+        null,
+        { item: "Mrs. Freshley's Grand Iced Honey Bun", category: 'other', priceCents: 300 },
+        { item: 'Claim Jumper', category: 'other', priceCents: 300 },
+        null,
+      ]),
+    ],
+    position: [-95.25273, 38.95796],
+  },
 ]

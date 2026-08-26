@@ -26,3 +26,28 @@ export function slotRange(from: string, to: string, details: Omit<Slot, 'code'>)
     ...details,
   }))
 }
+
+/**
+ * Builds one shelf of a Canteen/Revision-style snack machine from a
+ * left-to-right item list, matching the numbering printed on the machine:
+ * shelf prefix + a column digit that counts UP from the left, e.g. shelf 11
+ * reads 110, 112, 114, 116, 118 left to right.
+ *
+ * Wide shelves (chip bags) fit 5 slots and step by 2 (the default). The
+ * narrow candy-bar shelf fits 9-10 slots and steps by 1 — pass `step: 1`
+ * for that one.
+ *
+ * `snackRow(11, [{item: 'Cheetos'}, {item: 'Doritos'}, ...])` for a shelf
+ * read straight off a photo, left column first. Pass `null` for an empty or
+ * jammed slot to skip it without shifting the rest of the codes.
+ */
+export function snackRow(
+  prefix: number,
+  items: Array<Omit<Slot, 'code'> | null>,
+  step = 2,
+): Slot[] {
+  return items.flatMap((details, i) => {
+    if (details === null) return []
+    return [{ code: `${prefix}${i * step}`, ...details }]
+  })
+}

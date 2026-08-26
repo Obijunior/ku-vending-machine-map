@@ -163,6 +163,34 @@ mixes freely with regular entries. The two codes must share a letter prefix
 and the second must not come before the first; `slotRange` throws immediately
 on import if they don't, so a typo fails loudly instead of producing wrong data.
 
+Canteen/Revision snack machines number slots differently: shelf (1st digit) +
+a column digit that counts UP from the left, e.g. shelf 11 reads
+`110, 112, 114, 116, 118` left to right. Wide shelves (chip bags) hold 5
+slots stepping by 2; the narrow candy-bar shelf holds 9-10 slots stepping by
+1. Use `snackRow()` to enter a shelf straight off a photo, left column
+first, instead of typing those codes by hand:
+
+```ts
+import { snackRow } from './slotRange'
+
+slots: [
+  ...snackRow(11, [
+    { item: 'Cheetos', flavor: 'Crunchy', category: 'chips', priceCents: 250 },
+    { item: 'Doritos', flavor: 'Nacho Cheese', category: 'chips', priceCents: 250 },
+    { item: "Lay's", flavor: 'Classic', category: 'chips', priceCents: 250 },
+    null, // empty or jammed slot
+    { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips', priceCents: 250 },
+  ]),
+  // the candy-bar shelf is narrower — pass step 1
+  ...snackRow(15, [{ item: "Reese's", category: 'candy', priceCents: 250 }, /* ... */], 1),
+]
+```
+
+Pass `null` for an empty or jammed slot to skip it without shifting the
+column numbers after it. Since these machines print the price on every slot
+label, set `priceCents` on each entry rather than relying on a campus-wide
+default.
+
 ### Setting a campus-wide default price
 
 If the same item is priced the same way across machines, add it once to

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { slotRange } from './slotRange'
+import { slotRange, snackRow } from './slotRange'
 
 describe('slotRange', () => {
   it('expands a code range into individual slots sharing the same details', () => {
@@ -27,5 +27,38 @@ describe('slotRange', () => {
 
   it('throws when the range runs backwards', () => {
     expect(() => slotRange('B9', 'B1', { item: 'Pepsi' })).toThrow(/comes before/)
+  })
+})
+
+describe('snackRow', () => {
+  it('numbers a left-to-right item list with ascending step-2 column digits by default', () => {
+    const slots = snackRow(11, [
+      { item: 'Cheetos', category: 'chips' },
+      { item: 'Doritos', category: 'chips' },
+      { item: "Lay's", category: 'chips' },
+      { item: 'Ruffles', category: 'chips' },
+      { item: 'Sun Chips', category: 'chips' },
+    ])
+    expect(slots.map((s) => s.code)).toEqual(['110', '112', '114', '116', '118'])
+    expect(slots.map((s) => s.item)).toEqual(['Cheetos', 'Doritos', "Lay's", 'Ruffles', 'Sun Chips'])
+  })
+
+  it('supports step 1 for the narrow candy-bar shelf', () => {
+    const slots = snackRow(15, [{ item: "Reese's" }, { item: 'Kit Kat' }, { item: 'Snickers' }], 1)
+    expect(slots.map((s) => s.code)).toEqual(['150', '151', '152'])
+  })
+
+  it('skips null entries for empty or jammed slots without shifting other codes', () => {
+    const slots = snackRow(12, [
+      { item: 'Munchos', category: 'chips' },
+      null,
+      { item: 'Ritz', category: 'chips' },
+    ])
+    expect(slots.map((s) => s.code)).toEqual(['120', '124'])
+  })
+
+  it('carries per-slot fields like flavor and priceCents through', () => {
+    const slots = snackRow(14, [{ item: 'Nutter Butter', category: 'candy', priceCents: 350 }])
+    expect(slots).toEqual([{ code: '140', item: 'Nutter Butter', category: 'candy', priceCents: 350 }])
   })
 })
