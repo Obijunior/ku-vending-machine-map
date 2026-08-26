@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeItemName, resolveSlotPrice } from './itemPrices'
+import { itemPrices, itemPrices_snacks, normalizeItemName, resolveSlotPrice } from './itemPrices'
 import type { Slot } from './types'
 
 describe('normalizeItemName', () => {
@@ -33,5 +33,10 @@ describe('resolveSlotPrice', () => {
   it('returns null when there is no override and no matching default', () => {
     const slot: Slot = { code: 'A1', item: 'Unknown Snack' }
     expect(resolveSlotPrice(slot, prices)).toBeNull()
+  })
+
+  it('checks both itemPrices and itemPrices_snacks by default', () => {
+    expect(resolveSlotPrice({ code: 'A1', item: 'Gatorade' })).toBe(itemPrices['Gatorade'])
+    expect(resolveSlotPrice({ code: 'A1', item: 'Cheetos' })).toBe(itemPrices_snacks['Cheetos'])
   })
 })

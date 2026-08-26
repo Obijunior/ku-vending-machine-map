@@ -175,30 +175,35 @@ import { snackRow } from './slotRange'
 
 slots: [
   ...snackRow(11, [
-    { item: 'Cheetos', flavor: 'Crunchy', category: 'chips', priceCents: 250 },
-    { item: 'Doritos', flavor: 'Nacho Cheese', category: 'chips', priceCents: 250 },
-    { item: "Lay's", flavor: 'Classic', category: 'chips', priceCents: 250 },
+    { item: 'Cheetos', flavor: 'Crunchy', category: 'chips' },
+    { item: 'Doritos', flavor: 'Nacho Cheese', category: 'chips' },
+    { item: "Lay's", flavor: 'Classic', category: 'chips' },
     null, // empty or jammed slot
-    { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips', priceCents: 250 },
+    { item: 'Sun Chips', flavor: 'Garden Salsa', category: 'chips' },
   ]),
   // the candy-bar shelf is narrower — pass step 1
-  ...snackRow(15, [{ item: "Reese's", category: 'candy', priceCents: 250 }, /* ... */], 1),
+  ...snackRow(15, [{ item: "Reese's", category: 'candy' }, /* ... */], 1),
 ]
 ```
 
 Pass `null` for an empty or jammed slot to skip it without shifting the
-column numbers after it. Since these machines print the price on every slot
-label, set `priceCents` on each entry rather than relying on a campus-wide
-default.
+column numbers after it. Omit `priceCents` to use the campus-wide default for
+that item from `itemPrices_snacks` in `src/data/itemPrices.ts`; set it only
+when a specific slot is genuinely priced differently from the rest of campus.
 
 ### Setting a campus-wide default price
 
 If the same item is priced the same way across machines, add it once to
-`src/data/itemPrices.ts` instead of repeating `priceCents` on every slot:
+`src/data/itemPrices.ts` instead of repeating `priceCents` on every slot —
+`itemPrices` for drinks, `itemPrices_snacks` for Canteen/Revision snacks:
 
 ```ts
 export const itemPrices: Record<string, number> = {
   'Celsius Sparkling Orange': 350,
+}
+
+export const itemPrices_snacks: Record<string, number> = {
+  'Cheetos': 250,
 }
 ```
 

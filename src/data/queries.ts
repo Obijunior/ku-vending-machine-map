@@ -40,15 +40,12 @@ export function getRouteToBuilding(
   const start = nearestNode(graph, origin)
   if (!start) return null
 
-  // A building can have several doors, and one search finds the nearest of
-  // them — Dijkstra reaches them in distance order, so no per-door search is
-  // needed and the cost does not grow as more doors get mapped.
+  // cost doesn't grow as more doors get mapped.
   const route = findRouteToAny(graph, start.id, entranceIds)
   if (!route) return null
 
   const originLegMeters = distanceMeters(origin, start.coordinates)
-  // Origin already sits (near enough) on the snapped node — prepending would
-  // duplicate the vertex rather than add a meaningful leg.
+  // Origin already sits (near enough) on the snapped node
   if (originLegMeters < 1) return route
 
   return {
