@@ -53,7 +53,7 @@ export type VendingMachine = {
   buildingId: string
   type: MachineType
   floor: number
-  locationNote: string
+  locationNote?: string
   /** ISO date (YYYY-MM-DD) the data was last verified */
   lastUpdated: string
   /** Empty array = machine exists but inventory not surveyed yet */

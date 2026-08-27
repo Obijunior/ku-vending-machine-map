@@ -45,6 +45,7 @@ export default function MachineDot({
   return (
     <group position={[east + offsetX, elevation + dotRadius + 0.5, -north]}>
       <mesh
+        renderOrder={2}
         rotation={positioned ? [0, 0, 0] : [Math.PI / 2, 0, 0]}
         onClick={handleClick}
         onPointerOver={(e) => {
@@ -62,7 +63,15 @@ export default function MachineDot({
         ) : (
           <torusGeometry args={[dotRadius, dotRadius * 0.24, 12, 32]} />
         )}
-        <meshStandardMaterial color={color} transparent opacity={dimmed ? 0.25 : 1} />
+        {/* Floor plates are solid story-height extrusions, so a dot sitting at floor
+            level is geometrically inside them. Skip the depth test to keep it visible
+            as a point-of-interest marker instead of getting buried in the building mass. */}
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={dimmed ? 0.25 : 1}
+          depthTest={false}
+        />
       </mesh>
       {hovered && (
         <Html center distanceFactor={30} style={{ pointerEvents: 'none' }}>
