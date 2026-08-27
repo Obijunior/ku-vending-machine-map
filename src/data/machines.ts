@@ -399,6 +399,17 @@ export const machines: VendingMachine[] = [
       ...slotRange('A4', 'A5', {item: 'Rockstar', category: 'energy-drink', flavor: 'Original'}),
       ...slotRange('A6', 'A7', {item: 'Doubleshot Energy', category: 'coffee', flavor: 'Vanilla'}),
       ...slotRange('A8', 'A9', {item: 'Propel', category: 'electrolyte-drink', flavor: 'Grape'}),
+      ...slotRange('B1', 'B2', {item: 'Gatorade', category: 'electrolyte-drink', flavor: 'Cool Blue'}),
+      ...slotRange('B3', 'B4', {item: 'Gatorade Zero', category: 'electrolyte-drink', flavor: 'Glacier Freeze'}),
+      ...slotRange('B5', 'B7', {item: 'Starbucks Frappuccino', category: 'coffee', flavor: 'Mocha'}),
+      ...slotRange('B8', 'B9', {item: 'Pure Leaf', category: 'tea', flavor: 'Sweet Tea'}),
+      ...slotRange('C1', 'C5', {item: 'Bottled Pepsi', category: 'soda'}),
+      ...slotRange('C6', 'C7', {item: 'Bottled Pepsi', category: 'soda', flavor: 'Diet'}),
+      ...slotRange('C8', 'C9', {item: 'Bottled Pepsi', category: 'soda', flavor: 'Zero'}),
+      ...slotRange('D1', 'D2', {item: 'Bottled Mountain Dew', category: 'soda'}),
+      ...slotRange('D3', 'D4', {item: 'Bottled Starry', category: 'soda'}),
+      ...slotRange('D5', 'D7', {item: 'Bottled Dr. Pepper', category: 'soda'}),
+      ...slotRange('D8', 'D9', {item: 'Bottled Dr. Pepper', category: 'soda', flavor: 'Diet'}),
       ...slotRange('E1', 'E7', {item: 'Aquafina', category: 'water'}),
       ...slotRange('E8', 'E9', {item: 'Life Wtr', category: 'water'}),
     ]
@@ -460,4 +471,13 @@ export const machines: VendingMachine[] = [
     ],
     position: [-95.2544655, 38.9580464],
   },
+  {
+    id: 'blake-2-drink',
+    buildingId: 'blake',
+    type: 'drink',
+    floor: 2,
+    locationNote: 'Inside main entrance lobby',
+    lastUpdated: '2026-08-27',
+    slots: starbucksDefaultDrinkSlots(),
+  }
 ]
