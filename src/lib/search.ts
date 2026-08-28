@@ -1,3 +1,4 @@
+import { resolveSlotCategory } from '../data/itemCategories'
 import type { Building, Slot, VendingMachine } from '../data/types'
 import { CATEGORY_LABELS, groupSlots, type SlotGroup } from './format'
 
@@ -53,7 +54,8 @@ export function search(
     const building = buildingsById.get(machine.buildingId)
     if (!building) continue
     for (const slot of machine.slots) {
-      const categoryMatch = slot.category ? CATEGORY_LABELS[slot.category].toLowerCase().includes(q) : false
+      const category = resolveSlotCategory(slot)
+      const categoryMatch = category ? CATEGORY_LABELS[category].toLowerCase().includes(q) : false
       const flavorMatch = slot.flavor ? slot.flavor.toLowerCase().includes(q) : false
       if (slot.item.toLowerCase().includes(q) || categoryMatch || flavorMatch) {
         items.push({ slot, machine, building })

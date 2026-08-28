@@ -12,7 +12,7 @@ maintained by editing them and redeploying.
 Currently hosted at https://vending.henrynwagwu.me
 
 > **Data status:** Building coverage and machine inventory are incomplete.
-> Some inventory is placeholder data until it can be verified in person.
+> Current data is accurate, placeholder data has been removed
 
 
 ## Contributing

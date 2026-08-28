@@ -137,7 +137,9 @@ Inventory fields follow these rules:
   `electrolyte-drink`, `protein-shake`, `water`, `gum`, `candy`, `chips`, or
   `other`. It powers filtering by item type, so prefer the closest matching
   category over `other` when one applies. Add a new category to `SlotCategory`
-  in `src/data/types.ts` if none of the existing ones fit.
+  in `src/data/types.ts` if none of the existing ones fit. Omit it to use the
+  campus-wide default for that item from `src/data/itemCategories.ts`; set it
+  only to override that default for this specific slot.
 - `priceCents` is optional. Omit it to use the campus-wide default for that
   item from `src/data/itemPrices.ts`; set it only to override that default for
   this specific slot. When set, it must be a positive integer number of
@@ -211,6 +213,25 @@ Matching against a slot's `item` is case- and punctuation-insensitive, but
 word order still has to match, so keep the key identical to how the item is
 named in `machines.ts`. Any slot that sets its own `priceCents` overrides this
 default; a slot with neither shows as unpriced rather than guessing.
+
+### Setting a campus-wide default category
+
+Same idea for `category`: add the item once to `src/data/itemCategories.ts`
+instead of repeating `category` on every slot — `itemCategories` for drinks,
+`itemCategories_snacks` for Canteen/Revision snacks:
+
+```ts
+export const itemCategories: Record<string, SlotCategory> = {
+  'Celsius': 'energy-drink',
+}
+
+export const itemCategories_snacks: Record<string, SlotCategory> = {
+  'Cheetos': 'chips',
+}
+```
+
+Matching works the same way as `itemPrices`. Any slot that sets its own
+`category` overrides this default; a slot with neither is uncategorized.
 
 ### Adding walking paths
 
