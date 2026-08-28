@@ -29,6 +29,7 @@ export const itemCategories: Record<string, SlotCategory> = {
   'Bottled Mountain Dew': 'soda',
   'Bottled Dole Lemonade': 'juice',
   'Bottled Starry': 'soda',
+  'Bottled Crush': 'soda',
   'Juice': 'juice',
   'Muscle Milk': 'protein-shake',
 }

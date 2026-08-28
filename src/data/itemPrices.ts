@@ -24,6 +24,7 @@ export const itemPrices: Record<string, number> = { // bottled stuff is $2
   'Bottled Mountain Dew': 200,
   'Bottled Dole Lemonade': 200,
   'Bottled Starry': 200,
+  'Bottled Crush': 200,
 }
 
 /**
