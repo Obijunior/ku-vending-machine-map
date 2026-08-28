@@ -75,7 +75,7 @@ export const buildings: Building[] = [
   { id: 'krehbiel', name: 'Krehbiel Scholarship Hall', coordinates: [-95.24089427299464, 38.95966078305209], gisLocationId: '223', floors: [1, 2, 3] },
   { id: 'marvin-studios', name: 'Marvin Studios', coordinates: [-95.25059629517571, 38.95803179385031], gisLocationId: '044', floors: [1] },
   { id: 'center', name: 'Hall Center for the Humanities', coordinates: [-95.24555518079545, 38.9555449292752], gisLocationId: '027', floors: [-1, 1, 2] },
-  { id: 'blake', name: 'Blake Hall', coordinates: [-95.24399173714436, 38.95636363425567], gisLocationId: '017', floors: [-1, 1, 2, 3, 4, 5, 6] },
+  { id: 'blake', name: 'Blake Hall', coordinates: [-95.2434513, 38.9561455], gisLocationId: '017', floors: [-1, 1, 2, 3, 4, 5, 6] },
   { id: 'sabatini', name: 'Sabatini Multicultural Resource Center', coordinates: [-95.24308964944576, 38.95988438596267], gisLocationId: '222', floors: [1] },
   { id: 'baehr', name: 'Baehr Audio Reader', coordinates: [-95.2499116501841, 38.96482830780938], gisLocationId: '156', floors: [-1, 1, 2, 3] },
   { id: 'nunemaker', name: 'Nunemaker Center', coordinates: [-95.25739573049151, 38.955878087256856], gisLocationId: '140', floors: [1, 2] },
