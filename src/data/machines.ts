@@ -375,7 +375,7 @@ export const machines: VendingMachine[] = [
     id: 'slawson-1-drink',
     buildingId: 'slawson',
     type: 'drink',
-    floor: 1,
+    floor: 2,
     locationNote: 'In a nook off the side of the stairwell, away from the windows',
     lastUpdated: '2026-08-25',
     slots: [
@@ -450,7 +450,7 @@ export const machines: VendingMachine[] = [
       ...slotRange('C7', 'C9', {item: 'Pure Leaf', flavor: 'Raspberry'}),
       ...slotRange('D1', 'D9', {item: 'Gatorade'}),
       ...slotRange('E1', 'E3', {item: 'Propel', flavor: 'Grape'}),
-      ...slotRange('E4', 'E5', {item: 'Juice', flavor: 'Cran-Grape'}),
+      ...slotRange('E4', 'E6', {item: 'Juice', flavor: 'Cran-Grape'}),
       ...slotRange('E7', 'E9', {item: 'Juice', flavor: 'Apple'}),
     ],
     position: [-95.2544655, 38.9580464],
