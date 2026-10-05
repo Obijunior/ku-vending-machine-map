@@ -21,6 +21,14 @@ vi.mock('./campusGraph', () => ({
   },
 }))
 
+// Machine data changes with each survey, so use fixtures here.
+vi.mock('./machines', () => ({
+  machines: [
+    { id: 'wescoe-2-snack', buildingId: 'wescoe', type: 'snack', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+    { id: 'wescoe-2-drink', buildingId: 'wescoe', type: 'drink', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+  ],
+}))
+
 const graph: PathGraph = {
   nodes: new Map(
     (

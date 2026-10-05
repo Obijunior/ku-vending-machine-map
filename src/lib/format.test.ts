@@ -100,11 +100,11 @@ describe('itemLabel', () => {
 
 describe('formatSlotCodes', () => {
   it('collapses consecutive codes into a range', () => {
-    expect(formatSlotCodes(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7'])).toBe('C1–C7')
+    expect(formatSlotCodes(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7'])).toBe('C1-C7')
   })
 
   it('collapses multiple runs separately', () => {
-    expect(formatSlotCodes(['C1', 'C2', 'C3', 'D1', 'D2', 'D3'])).toBe('C1–C3, D1–D3')
+    expect(formatSlotCodes(['C1', 'C2', 'C3', 'D1', 'D2', 'D3'])).toBe('C1-C3, D1-D3')
   })
 
   it('leaves a single code as-is', () => {

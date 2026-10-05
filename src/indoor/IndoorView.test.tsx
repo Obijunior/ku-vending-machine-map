@@ -13,6 +13,14 @@ vi.mock('@react-three/drei', () => ({
   Html: () => null,
 }))
 
+// Machine data changes with each survey, so use fixtures here.
+vi.mock('../data/machines', () => ({
+  machines: [
+    { id: 'wescoe-2-snack', buildingId: 'wescoe', type: 'snack', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+    { id: 'wescoe-2-drink', buildingId: 'wescoe', type: 'drink', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+  ],
+}))
+
 const wescoe = getBuildingById('wescoe')!
 const wescoeMachines = getMachinesForBuilding('wescoe')
 

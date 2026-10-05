@@ -16,6 +16,14 @@ vi.mock('../data/campusGraph', () => ({
   buildingEntrances: { wescoe: ['n-wescoe-door'] },
 }))
 
+// Machine data changes with each survey, so use fixtures here.
+vi.mock('../data/machines', () => ({
+  machines: [
+    { id: 'wescoe-2-snack', buildingId: 'wescoe', type: 'snack', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+    { id: 'wescoe-2-drink', buildingId: 'wescoe', type: 'drink', floor: 2, lastUpdated: '2026-07-22', slots: [] },
+  ],
+}))
+
 // Stand in for the fetched network so the pane renders synchronously — jsdom
 // has no server to load the real asset from. Only the hook is replaced.
 vi.mock('../data/campusPaths', async (importOriginal) => ({
