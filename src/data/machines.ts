@@ -1,4 +1,5 @@
-import { slotRange, snackRow } from './slotRange'
+import { slotRange } from './slotRange'
+// snackRow removed from ^ for lint error
 import { starbucksDefaultDrinkSlots } from './defaultSlots'
 import type { VendingMachine } from './types'
 
@@ -38,14 +39,14 @@ export const machines: VendingMachine[] = [
       ...slotRange('E6', 'E7', {item: 'Bottled Dole Lemonade', flavor: 'Strawberry'}),
     ],
   },
-  {
-    id: 'anschutz-3-snack',
-    buildingId: 'anschutz',
-    type: 'snack',
-    floor: 3,
-    lastUpdated: '2026-08-24',
-    slots: [],
-  },
+  // {
+  //   id: 'anschutz-3-snack',
+  //   buildingId: 'anschutz',
+  //   type: 'snack',
+  //   floor: 3,
+  //   lastUpdated: '2026-08-24',
+  //   slots: [],
+  // },
   {
     id: 'anschutz-2-drink',
     buildingId: 'anschutz',
@@ -54,70 +55,70 @@ export const machines: VendingMachine[] = [
     lastUpdated: '2026-08-24',
     slots: starbucksDefaultDrinkSlots(),
   },
-  {
-    id: 'leep2-1-snack',
-    buildingId: 'leep2',
-    type: 'snack',
-    floor: 1,
-    locationNote: 'Area by Burns-Mac lounge',
-    lastUpdated: '2026-08-25',
-    // Some slots omitted where the photo was too glare-obscured to read reliably: 116, 128,
-    // 134, 136, 138, 146, 148, 151, 154, 155, 157, 158, 164, 166, 168.
-    // 144 (Claim Jumper cookie) cross-referenced from the clearer eaton-snack-1 photo, which
-    // shows the same $3.00 item.
-    slots: [
-      ...snackRow(11, [
-        { item: 'Cheetos', flavor: 'Crunchy' },
-        { item: 'Doritos', flavor: 'Nacho Cheese' },
-        { item: "Lay's", flavor: 'Classic' },
-        null,
-        { item: 'Sun Chips', flavor: 'Garden Salsa' },
-      ]),
-      ...snackRow(12, [
-        { item: 'Fritos', flavor: 'Chili Cheese' },
-        { item: 'Ruffles', flavor: 'Cheddar & Sour Cream' },
-        { item: "T.G.I. Friday's Potato Skins", flavor: 'Cheddar & Bacon' },
-        { item: 'Doritos', flavor: 'Cool Ranch' },
-        null,
-      ]),
-      ...snackRow(13, [
-        { item: 'Chex Mix Muddy Buddies', flavor: 'Peanut Butter Chocolate' },
-        { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
-        null,
-        null,
-        null,
-      ]),
-      ...snackRow(14, [
-        { item: 'Rice Krispies Treats', flavor: 'Original' },
-        { item: 'Pop-Tarts', flavor: 'Strawberry' },
-        { item: 'Claim Jumper' },
-        null,
-        null,
-      ]),
-      ...snackRow(
-        15,
-        [
-          { item: "Reese's" },
-          null,
-          { item: "Reese's Sticks" },
-          { item: 'Butterfinger' },
-          null,
-          null,
-          { item: "Reese's Outrageous" },
-          null,
-          null,
-        ],
-        1,
-      ),
-      ...snackRow(16, [
-        { item: "Grandma's", flavor: 'Peanut Butter' },
-        { item: "Grandma's", flavor: 'Chocolate Brownie' },
-        null,
-        null,
-        null,
-      ]),
-    ],
-  },
+  // {
+  //   id: 'leep2-1-snack',
+  //   buildingId: 'leep2',
+  //   type: 'snack',
+  //   floor: 1,
+  //   locationNote: 'Area by Burns-Mac lounge',
+  //   lastUpdated: '2026-08-25',
+  //   // Some slots omitted where the photo was too glare-obscured to read reliably: 116, 128,
+  //   // 134, 136, 138, 146, 148, 151, 154, 155, 157, 158, 164, 166, 168.
+  //   // 144 (Claim Jumper cookie) cross-referenced from the clearer eaton-snack-1 photo, which
+  //   // shows the same $3.00 item.
+  //   slots: [
+  //     ...snackRow(11, [
+  //       { item: 'Cheetos', flavor: 'Crunchy' },
+  //       { item: 'Doritos', flavor: 'Nacho Cheese' },
+  //       { item: "Lay's", flavor: 'Classic' },
+  //       null,
+  //       { item: 'Sun Chips', flavor: 'Garden Salsa' },
+  //     ]),
+  //     ...snackRow(12, [
+  //       { item: 'Fritos', flavor: 'Chili Cheese' },
+  //       { item: 'Ruffles', flavor: 'Cheddar & Sour Cream' },
+  //       { item: "T.G.I. Friday's Potato Skins", flavor: 'Cheddar & Bacon' },
+  //       { item: 'Doritos', flavor: 'Cool Ranch' },
+  //       null,
+  //     ]),
+  //     ...snackRow(13, [
+  //       { item: 'Chex Mix Muddy Buddies', flavor: 'Peanut Butter Chocolate' },
+  //       { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
+  //       null,
+  //       null,
+  //       null,
+  //     ]),
+  //     ...snackRow(14, [
+  //       { item: 'Rice Krispies Treats', flavor: 'Original' },
+  //       { item: 'Pop-Tarts', flavor: 'Strawberry' },
+  //       { item: 'Claim Jumper' },
+  //       null,
+  //       null,
+  //     ]),
+  //     ...snackRow(
+  //       15,
+  //       [
+  //         { item: "Reese's" },
+  //         null,
+  //         { item: "Reese's Sticks" },
+  //         { item: 'Butterfinger' },
+  //         null,
+  //         null,
+  //         { item: "Reese's Outrageous" },
+  //         null,
+  //         null,
+  //       ],
+  //       1,
+  //     ),
+  //     ...snackRow(16, [
+  //       { item: "Grandma's", flavor: 'Peanut Butter' },
+  //       { item: "Grandma's", flavor: 'Chocolate Brownie' },
+  //       null,
+  //       null,
+  //       null,
+  //     ]),
+  //   ],
+  // },
   {
     id: 'leep2-2-drink',
     buildingId: 'leep2',
@@ -144,71 +145,71 @@ export const machines: VendingMachine[] = [
     ], 
     position: [-95.25365, 38.95778],
   },
-  {
-    id: 'leep2-3-snack',
-    buildingId: 'leep2',
-    type: 'snack',
-    floor: 1,
-    locationNote: 'Area by Burns-Mac lounge',
-    lastUpdated: '2026-08-25',
-    // Some slots omitted where the photo was too glare-obscured to read reliably: 124, 148,
-    // 157, 158, 164.
-    // 146, 153, and 159 cross-referenced from the clearer eaton-snack-1 photo: same $3.00
-    // cookie at 146, and the same Snickers-PayDay-Bueno-...-M&M's-Nature Valley run at 153/159.
-    slots: [
-      ...snackRow(11, [
-        { item: "Lay's", flavor: 'Classic' },
-        { item: 'Doritos', flavor: 'Nacho Cheese' },
-        { item: 'Ruffles', flavor: 'Cheddar & Sour Cream' },
-        { item: 'Sun Chips', flavor: 'Garden Salsa' },
-        { item: 'Ruffles', flavor: 'Baked' },
-      ]),
-      ...snackRow(12, [
-        { item: 'Fritos', flavor: 'Chili Cheese' },
-        { item: 'Cheetos', flavor: "Flamin' Hot Crunchy" },
-        null,
-        { item: "Snyder's of Hanover", flavor: 'Mini Pretzels' },
-        { item: 'Munchies', flavor: 'Cheese Fix' },
-      ]),
-      ...snackRow(13, [
-        { item: 'Cheez-It', flavor: 'Original' },
-        { item: "Gardetto's", flavor: 'Original Recipe' },
-        { item: 'Ritz Toasted Chips', flavor: 'Sour Cream' },
-        { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
-        { item: 'Veggie Toasted Chips' },
-      ]),
-      ...snackRow(14, [
-        { item: "Mrs. Freshley's Grand Iced Honey Bun" },
-        { item: "Mrs. Freshley's Mini Donuts", flavor: 'Frosted' },
-        { item: 'Haribo Goldbears' },
-        { item: 'Claim Jumper' },
-        null,
-      ]),
-      ...snackRow(
-        15,
-        [
-          { item: "Reese's" },
-          { item: 'Kit Kat' },
-          { item: 'Snickers' },
-          { item: 'PayDay' },
-          { item: 'Kinder Bueno' },
-          { item: 'Butterfinger' },
-          { item: "M&M's" },
-          null,
-          null,
-          { item: 'Nature Valley Crunchy' },
-        ],
-        1,
-      ),
-      ...snackRow(16, [
-        { item: "Grandma's", flavor: 'Vanilla Creme' },
-        { item: "Grandma's", flavor: 'Chocolate Brownie' },
-        null,
-        { item: 'Chips Ahoy', flavor: 'Mini' },
-        { item: 'Rice Krispies Treats', flavor: 'Original' },
-      ]),
-    ],
-  },
+  // {
+  //   id: 'leep2-3-snack',
+  //   buildingId: 'leep2',
+  //   type: 'snack',
+  //   floor: 1,
+  //   locationNote: 'Area by Burns-Mac lounge',
+  //   lastUpdated: '2026-08-25',
+  //   // Some slots omitted where the photo was too glare-obscured to read reliably: 124, 148,
+  //   // 157, 158, 164.
+  //   // 146, 153, and 159 cross-referenced from the clearer eaton-snack-1 photo: same $3.00
+  //   // cookie at 146, and the same Snickers-PayDay-Bueno-...-M&M's-Nature Valley run at 153/159.
+  //   slots: [
+  //     ...snackRow(11, [
+  //       { item: "Lay's", flavor: 'Classic' },
+  //       { item: 'Doritos', flavor: 'Nacho Cheese' },
+  //       { item: 'Ruffles', flavor: 'Cheddar & Sour Cream' },
+  //       { item: 'Sun Chips', flavor: 'Garden Salsa' },
+  //       { item: 'Ruffles', flavor: 'Baked' },
+  //     ]),
+  //     ...snackRow(12, [
+  //       { item: 'Fritos', flavor: 'Chili Cheese' },
+  //       { item: 'Cheetos', flavor: "Flamin' Hot Crunchy" },
+  //       null,
+  //       { item: "Snyder's of Hanover", flavor: 'Mini Pretzels' },
+  //       { item: 'Munchies', flavor: 'Cheese Fix' },
+  //     ]),
+  //     ...snackRow(13, [
+  //       { item: 'Cheez-It', flavor: 'Original' },
+  //       { item: "Gardetto's", flavor: 'Original Recipe' },
+  //       { item: 'Ritz Toasted Chips', flavor: 'Sour Cream' },
+  //       { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
+  //       { item: 'Veggie Toasted Chips' },
+  //     ]),
+  //     ...snackRow(14, [
+  //       { item: "Mrs. Freshley's Grand Iced Honey Bun" },
+  //       { item: "Mrs. Freshley's Mini Donuts", flavor: 'Frosted' },
+  //       { item: 'Haribo Goldbears' },
+  //       { item: 'Claim Jumper' },
+  //       null,
+  //     ]),
+  //     ...snackRow(
+  //       15,
+  //       [
+  //         { item: "Reese's" },
+  //         { item: 'Kit Kat' },
+  //         { item: 'Snickers' },
+  //         { item: 'PayDay' },
+  //         { item: 'Kinder Bueno' },
+  //         { item: 'Butterfinger' },
+  //         { item: "M&M's" },
+  //         null,
+  //         null,
+  //         { item: 'Nature Valley Crunchy' },
+  //       ],
+  //       1,
+  //     ),
+  //     ...snackRow(16, [
+  //       { item: "Grandma's", flavor: 'Vanilla Creme' },
+  //       { item: "Grandma's", flavor: 'Chocolate Brownie' },
+  //       null,
+  //       { item: 'Chips Ahoy', flavor: 'Mini' },
+  //       { item: 'Rice Krispies Treats', flavor: 'Original' },
+  //     ]),
+  //   ],
+  // },
   {
     id: 'ambler-rec-1-drink',
     buildingId: 'ambler-rec',
@@ -314,44 +315,44 @@ export const machines: VendingMachine[] = [
     ],
     position: [-95.25273, 38.95796],
   },
-  {
-    id: 'eaton-snack-1',
-    buildingId: 'eaton',
-    type: 'snack',
-    floor: 1,
-    locationNote: 'Across from fishbowl',
-    lastUpdated: '2026-08-25',
-    // Photo only captured the middle 3 columns of each row and cut off before the candy-bar
-    // and cookie shelves' own price labels, so slots 110/120/130/140/150+/160+ and 118+ are
-    // not catalogued yet. 112 and 146 skipped: visible but unclear from glare/wrapper angle.
-    slots: [
-      ...snackRow(11, [
-        { item: "Lay's", flavor: 'Classic' },
-        { item: 'Doritos', flavor: 'Nacho Cheese' },
-        { item: 'Sun Chips', flavor: 'Garden Salsa' },
-        { item: 'Ruffles', flavor: 'Baked' },
-      ]),
-      ...snackRow(12, [
-        { item: 'Fritos', flavor: 'Chili Cheese' },
-        { item: 'Cheetos', flavor: 'Crunchy' },
-        { item: "Snyder's of Hanover", flavor: 'Mini Pretzels' },
-        { item: 'Munchies', flavor: 'Cheese Fix' },
-      ]),
-      ...snackRow(13, [
-        { item: 'Cheez-It', flavor: 'Original' },
-        { item: "Gardetto's", flavor: 'Original Recipe' },
-        { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
-        { item: 'Veggie Toasted Chips' },
-      ]),
-      ...snackRow(14, [
-        { item: "Mrs. Freshley's Grand Iced Honey Bun" },
-        null,
-        { item: 'Claim Jumper' },
-        null,
-      ]),
-    ],
-    position: [-95.25273, 38.95796],
-  },
+  // {
+  //   id: 'eaton-snack-1',
+  //   buildingId: 'eaton',
+  //   type: 'snack',
+  //   floor: 1,
+  //   locationNote: 'Across from fishbowl',
+  //   lastUpdated: '2026-08-25',
+  //   // Photo only captured the middle 3 columns of each row and cut off before the candy-bar
+  //   // and cookie shelves' own price labels, so slots 110/120/130/140/150+/160+ and 118+ are
+  //   // not catalogued yet. 112 and 146 skipped: visible but unclear from glare/wrapper angle.
+  //   slots: [
+  //     ...snackRow(11, [
+  //       { item: "Lay's", flavor: 'Classic' },
+  //       { item: 'Doritos', flavor: 'Nacho Cheese' },
+  //       { item: 'Sun Chips', flavor: 'Garden Salsa' },
+  //       { item: 'Ruffles', flavor: 'Baked' },
+  //     ]),
+  //     ...snackRow(12, [
+  //       { item: 'Fritos', flavor: 'Chili Cheese' },
+  //       { item: 'Cheetos', flavor: 'Crunchy' },
+  //       { item: "Snyder's of Hanover", flavor: 'Mini Pretzels' },
+  //       { item: 'Munchies', flavor: 'Cheese Fix' },
+  //     ]),
+  //     ...snackRow(13, [
+  //       { item: 'Cheez-It', flavor: 'Original' },
+  //       { item: "Gardetto's", flavor: 'Original Recipe' },
+  //       { item: "Jack Link's Beef Tender Bites", flavor: 'Original' },
+  //       { item: 'Veggie Toasted Chips' },
+  //     ]),
+  //     ...snackRow(14, [
+  //       { item: "Mrs. Freshley's Grand Iced Honey Bun" },
+  //       null,
+  //       { item: 'Claim Jumper' },
+  //       null,
+  //     ]),
+  //   ],
+  //   position: [-95.25273, 38.95796],
+  // },
   {
     id: 'snow-drink-1',
     buildingId: 'snow',
@@ -462,6 +463,24 @@ export const machines: VendingMachine[] = [
     floor: 2,
     locationNote: 'Inside main entrance lobby',
     lastUpdated: '2026-08-27',
+    slots: starbucksDefaultDrinkSlots(),
+  },
+  {
+    id: 'capfed-3-drink',
+    buildingId: 'cap-fed',
+    type: 'drink',
+    floor: 3,
+    locationNote: 'In nook near stairwell',
+    lastUpdated: '2026-09-17',
+    slots: []
+  },
+  {
+    id: 'watson-drink-1',
+    buildingId: 'watson',
+    type: 'drink',
+    floor: 3,
+    locationNote: 'From main entrance, take a right',
+    lastUpdated: '2026-09-25',
     slots: starbucksDefaultDrinkSlots(),
   }
 ]
